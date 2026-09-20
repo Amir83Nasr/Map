@@ -212,17 +212,29 @@ body {
   inset: -10px;
   z-index: 0;
   border-radius: 50%;
-  background: rgba(47, 107, 255, 0.25);
-  animation: myPing 2s ease-out infinite;
+  border: 0.08px solid rgba(47, 107, 255, 0.15);
+  background: rgba(47, 107, 255, 0.08);
+  animation: myPing 3s linear infinite;
 }
 @keyframes myPing {
-  from {
+  0% {
     transform: scale(0.5);
     opacity: 1;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
   }
-  to {
-    transform: scale(6);
-    opacity: 0;
+  35% {
+    transform: scale(4.25);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
+  }
+  50% {
+    transform: scale(4);
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 1;
   }
 }
 @keyframes spin {

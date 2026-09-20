@@ -141,7 +141,7 @@ function locate() {
     (p) => {
       els.gps.classList.remove("locating");
       showMyPos(p.coords.latitude, p.coords.longitude);
-      setSelected(p.coords.latitude, p.coords.longitude, { moveMap: true, zoom: 17 });
+      setSelected(p.coords.latitude, p.coords.longitude, { moveMap: true, zoom: 24 });
     },
     (err) => {
       els.gps.classList.remove("locating");
@@ -249,7 +249,7 @@ els.confirm.onclick = async () => {
   els.confirm.textContent = "در حال ثبت...";
   await new Promise((r) => setTimeout(r, 800));
   els.confirm.disabled = false;
-  els.confirm.textContent = "تایید مبدا";
+  els.confirm.textContent = "تایید موقعیت";
   toast(`موقعیت ثبت شد (${fa(S.lat)}, ${fa(S.lng)})`);
   renderSheet();
 };
