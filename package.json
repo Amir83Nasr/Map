@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Vanilla TypeScript map location picker (Qom)",
+  "packageManager": "pnpm@12.5.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
