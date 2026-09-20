@@ -11,7 +11,7 @@ const els = {
   modal: $("permModal"), permHint: $("permHint"),
   overlay: $("searchOverlay"), openBtn: $("searchOpen"),
   backBtn: $("searchBack"), label: $("searchLabel"),
-  home: $("homeContent"), recentList: $("recentList"), suggestList: $("suggestList"),
+  home: $("homeContent"), suggestList: $("suggestList"),
 };
 
 // ── MAP ──────────────────────────────────────────────────
@@ -240,7 +240,6 @@ $("permClose").onclick = hideModal;
 els.modal.addEventListener("click", (e) => { if (e.target === els.modal) hideModal(); });
 
 // ── SEARCH OVERLAY ───────────────────────────────────────
-const LS_RECENT = "mt:recent", LS_FAV = "mt:fav";
 const SUGGEST = [
   { name: "صفائیه، قم", addr: "محله صفائیه، شهر قم", lat: 34.6327, lng: 50.8713 },
   { name: "زنبیل‌آباد، قم", addr: "محله زنبیل‌آباد، شهر قم", lat: 34.6221, lng: 50.8912 },
@@ -251,58 +250,25 @@ const SUGGEST = [
   { name: "سالاریه، قم", addr: "محله سالاریه، شهر قم", lat: 34.6289, lng: 50.8624 },
   { name: "پردیسان، قم", addr: "شهرک پردیسان، شهر قم", lat: 34.6021, lng: 50.8412 },
 ];
-function loadJSON(k, fb) {
-  try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : fb; }
-  catch { return fb; }
-}
-function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
-let recent = loadJSON(LS_RECENT, []);
-let fav = new Set(loadJSON(LS_FAV, []));
-function isFav(name) { return fav.has(name); }
-function toggleFav(name) {
-  if (fav.has(name)) fav.delete(name); else fav.add(name);
-  saveJSON(LS_FAV, [...fav]);
-}
-function pushRecent(item) {
-  recent = [item, ...recent.filter((r) => r.name !== item.name)].slice(0, 8);
-  saveJSON(LS_RECENT, recent);
-}
-function histRow({ name, addr, right, favOn }) {
+function histRow({ name, addr }) {
   const b = document.createElement("button");
   b.className = "hist-row";
   b.type = "button";
-  b.innerHTML = `<span class="side-ic right"></span><span class="t"><b></b><small></small></span><span class="side-ic fav"><i data-lucide="star"></i></span>`;
+  b.innerHTML = `<span class="side-ic right"><i data-lucide="map-pin"></i></span><span class="t"><b></b><small></small></span>`;
   b.querySelector("b").textContent = name;
   b.querySelector("small").textContent = addr;
-  const favEl = b.querySelector(".fav");
-  if (favOn) favEl.classList.add("on");
-  if (right === "clock") b.querySelector(".right").innerHTML = `<i data-lucide="history"></i>`;
-  else b.querySelector(".right").innerHTML = `<i data-lucide="map-pin"></i>`;
-  return { el: b, favEl };
+  return b;
 }
 function renderHome(q) {
   const needle = enDigits(q || "").trim();
   const match = (t) => !needle || String(t).includes(needle);
-  els.recentList.innerHTML = "";
-  const rec = recent.filter((r) => match(r.name) || match(r.addr));
-  for (const r of rec) {
-    const { el, favEl } = histRow({ name: r.name, addr: r.addr, right: "clock", favOn: isFav(r.name) });
-    favEl.onclick = (e) => { e.stopPropagation(); toggleFav(r.name); favEl.classList.toggle("on"); };
-    el.onclick = () => {
-      closeSearch();
-      setSelected(r.lat, r.lng, { moveMap: true });
-    };
-    els.recentList.appendChild(el);
-  }
   els.suggestList.innerHTML = "";
   const sug = SUGGEST.filter((s) => match(s.name) || match(s.addr));
   for (const s of sug) {
-    const { el, favEl } = histRow({ name: s.name, addr: s.addr, right: "pin", favOn: isFav(s.name) });
-    favEl.onclick = (e) => { e.stopPropagation(); toggleFav(s.name); favEl.classList.toggle("on"); };
+    const el = histRow({ name: s.name, addr: s.addr });
     el.onclick = () => {
-      pushRecent({ name: s.name, addr: s.addr, lat: s.lat, lng: s.lng });
       closeSearch();
-      setSelected(s.lat, s.lng, { moveMap: true });
+      setSelected(s.lat, s.lng, { moveMap: true, zoom: 14 });
     };
     els.suggestList.appendChild(el);
   }
@@ -367,9 +333,8 @@ async function search(q) {
       b.querySelector("b").textContent = faStr(name);
       b.querySelector("small").textContent = faStr(it.display_name);
       b.onclick = () => {
-        pushRecent({ name: faStr(name), addr: faStr(it.display_name), lat: parseFloat(it.lat), lng: parseFloat(it.lon) });
         closeSearch();
-        setSelected(parseFloat(it.lat), parseFloat(it.lon), { moveMap: true });
+        setSelected(parseFloat(it.lat), parseFloat(it.lon), { moveMap: true, zoom: 14 });
       };
       els.results.appendChild(b);
     }
@@ -392,17 +357,33 @@ els.searchInput.addEventListener("input", () => {
 els.searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") { clearTimeout(searchTimer); submitSearch(); }
 });
-document.querySelectorAll(".fav-chip").forEach((c) => {
-  c.onclick = () => { els.searchInput.value = c.dataset.q; renderHome(c.dataset.q); els.home.hidden = false; els.results.innerHTML = ""; };
-});
 
-// ── SHEET ACTIONS ────────────────────────────────────────
-els.confirm.onclick = async () => {
-  els.confirm.disabled = true;
-  els.confirm.textContent = "در حال ثبت...";
+// ── CONFIRM DIALOG ─────────────────────────────────────────
+const confirmModal = $("confirmModal"), confirmAddress = $("confirmAddress"),
+  confirmCoords = $("confirmCoords"), confirmFinal = $("confirmFinal");
+function openConfirm() {
+  confirmAddress.value = S.address ? faStr(S.address) : "";
+  confirmCoords.textContent = `${Number(S.lat).toFixed(6)}, ${Number(S.lng).toFixed(6)}`;
+  confirmModal.classList.remove("hidden");
+  refreshIcons();
+}
+function closeConfirm() { confirmModal.classList.add("hidden"); }
+els.confirm.onclick = () => {
+  if (!S.address && !S.resolving) scheduleResolve(S.lat, S.lng, 100);
+  openConfirm();
+};
+$("confirmClose").onclick = closeConfirm;
+$("confirmEdit").onclick = closeConfirm;
+confirmModal.addEventListener("click", (e) => { if (e.target === confirmModal) closeConfirm(); });
+confirmFinal.onclick = async () => {
+  const btn = confirmFinal;
+  btn.disabled = true;
+  const prev = btn.textContent;
+  btn.textContent = "در حال ثبت...";
   await new Promise((r) => setTimeout(r, 800));
-  els.confirm.disabled = false;
-  els.confirm.textContent = "تایید موقعیت";
+  btn.disabled = false;
+  btn.textContent = prev;
+  closeConfirm();
   toast(`موقعیت ثبت شد (${fa(S.lat)}, ${fa(S.lng)})`);
   renderSheet();
 };

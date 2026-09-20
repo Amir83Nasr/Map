@@ -89,19 +89,6 @@
         </div>
         <div class="ov-body">
           <div id="homeContent">
-            <div class="fav-row">
-              <button class="fav-chip" type="button" data-q="خانه">
-                <span class="fav-star"><i data-lucide="star"></i></span>خانه
-              </button>
-              <button class="fav-chip" type="button" data-q="مدرسه">
-                <span class="fav-star"><i data-lucide="star"></i></span>مدرسه
-              </button>
-              <button class="fav-chip" type="button" data-q="مامان بزرگ">
-                <span class="fav-star"><i data-lucide="star"></i></span>مامان بزرگ
-              </button>
-            </div>
-            <h3 class="sec-t">جست‌وجوهای اخیر</h3>
-            <div id="recentList"></div>
             <h3 class="sec-t">مکان‌های پیشنهادی</h3>
             <div id="suggestList"></div>
           </div>
@@ -133,6 +120,34 @@
             <button id="permRetry" class="cta">
               <i data-lucide="locate-fixed"></i>فعال کردن دسترسی
             </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="confirmModal"
+        class="modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmTitle"
+      >
+        <div class="modal-card">
+          <button id="confirmClose" class="modal-close" aria-label="بستن">
+            <i data-lucide="x"></i>
+          </button>
+          <h2 id="confirmTitle">تایید موقعیت</h2>
+          <label class="addr-label" for="confirmAddress">آدرس انتخابی</label>
+          <textarea
+            id="confirmAddress"
+            class="addr-input"
+            rows="3"
+            placeholder="آدرس انتخابی..."
+          ></textarea>
+          <div class="addr-label">مختصات ارسالی به سرور</div>
+          <div id="confirmCoords" class="coords-box" dir="ltr"></div>
+          <div class="modal-row">
+            <button id="confirmFinal" class="cta">تایید</button>
+            <button id="confirmEdit" class="ghost" type="button">ویرایش روی نقشه</button>
           </div>
         </div>
       </div>

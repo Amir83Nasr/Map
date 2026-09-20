@@ -466,12 +466,15 @@ body {
 .search-bar .search-field input {
   border: 0;
   background: transparent;
-  padding: 10px 0 10px 40px;
+  padding: 10px 0 10px 28px;
   min-height: 42px;
   text-align: right;
 }
 .search-bar .search-field input:focus {
   border: 0;
+}
+.search-bar .search-ic {
+  left: 0;
 }
 .ov-body {
   flex: 1;
@@ -480,44 +483,6 @@ body {
   margin: 0 auto;
   overflow-y: auto;
   min-height: 0;
-}
-.fav-row {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding: 14px 0 6px;
-  scrollbar-width: none;
-}
-.fav-row::-webkit-scrollbar {
-  display: none;
-}
-.fav-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--ink);
-  white-space: nowrap;
-  cursor: pointer;
-  padding: 4px;
-}
-.fav-star {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #e9edff;
-  display: grid;
-  place-items: center;
-  color: #2f6bff;
-}
-.fav-star .lucide {
-  width: 16px;
-  height: 16px;
-  fill: #2f6bff;
-  stroke: #2f6bff;
 }
 .sec-t {
   font-size: 13px;
@@ -554,16 +519,6 @@ body {
 .hist-row .side-ic .lucide {
   width: 20px;
   height: 20px;
-}
-.hist-row .side-ic.fav {
-  color: var(--mut);
-}
-.hist-row .side-ic.fav.on {
-  color: #2f6bff;
-}
-.hist-row .side-ic.fav.on .lucide {
-  fill: #2f6bff;
-  stroke: #2f6bff;
 }
 .hist-row .t b,
 .result-card b {
@@ -671,6 +626,36 @@ body {
 .modal-row {
   display: flex;
   gap: 8px;
+}
+.addr-label {
+  display: block;
+  font-size: 13px;
+  color: var(--mut);
+  margin: 12px 0 6px;
+}
+.addr-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.9;
+  resize: vertical;
+  outline: none;
+}
+.addr-input:focus {
+  border-color: var(--brand);
+}
+.coords-box {
+  background: #f4f5f7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  text-align: center;
+  letter-spacing: 0.3px;
 }
 
 /* ── TOAST ─────────────────────────────────────────────── */
