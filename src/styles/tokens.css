@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('../assets/fonts/IRANYekanX-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── TOKENS ──────────────────────────────────────────────── */
+@theme {
+  --font-sans: 'IRANYekanX', Tahoma, system-ui, -apple-system, sans-serif;
+
+  --color-bg: #f5f5f5;
+  --color-card: #fff;
+  --color-ink: #111;
+  --color-mut: #6b7280;
+  --color-line: #e5e7eb;
+  --color-brand: oklch(48% 0.12 240);
+  --color-brand-d: oklch(48% 0.12 240);
+
+  --radius-card: 16px;
+  --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.14);
+}
+
+/* Legacy aliases so component CSS keeps its existing var names. */
+:root {
+  --bg: var(--color-bg);
+  --card: var(--color-card);
+  --ink: var(--color-ink);
+  --mut: var(--color-mut);
+  --line: var(--color-line);
+  --brand: var(--color-brand);
+  --brand-d: var(--color-brand-d);
+  --r: var(--radius-card);
+  --sh: var(--shadow-card);
+  --font: var(--font-sans);
+}

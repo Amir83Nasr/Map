@@ -1,0 +1,28 @@
+/* ── BASE ────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
+}
+.app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.hidden {
+  display: none !important;
+}
+.lucide {
+  flex: 0 0 auto;
+  vertical-align: middle;
+}

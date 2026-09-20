@@ -2,26 +2,9 @@
 <html dir="rtl" lang="fa">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Map</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
-    <link
-      rel="preconnect"
-      href="https://a.basemaps.cartocdn.com"
-      crossorigin
-    />
-    <link
-      rel="preconnect"
-      href="https://b.basemaps.cartocdn.com"
-      crossorigin
-    />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
   </head>
   <body>
     <div class="app">
@@ -45,12 +28,8 @@
           <div class="grab" aria-hidden="true"></div>
           <div class="search">
             <button id="searchOpen" class="search-trigger" type="button">
-              <span class="search-ic" aria-hidden="true"
-                ><i data-lucide="search"></i
-              ></span>
-              <span id="searchLabel" class="search-label"
-                >جستجوی آدرس یا مکان</span
-              >
+              <span class="search-ic" aria-hidden="true"><i data-lucide="search"></i></span>
+              <span id="searchLabel" class="search-label">جستجوی آدرس یا مکان</span>
             </button>
           </div>
           <div class="desk-search">
@@ -72,9 +51,7 @@
                 >
                   <i data-lucide="x"></i>
                 </button>
-                <span class="search-ic" aria-hidden="true"
-                  ><i data-lucide="search"></i
-                ></span>
+                <span class="search-ic" aria-hidden="true"><i data-lucide="search"></i></span>
               </div>
             </div>
             <div class="desk-body">
@@ -123,9 +100,7 @@
             >
               <i data-lucide="x"></i>
             </button>
-            <span class="search-ic" aria-hidden="true"
-              ><i data-lucide="search"></i
-            ></span>
+            <span class="search-ic" aria-hidden="true"><i data-lucide="search"></i></span>
           </div>
         </div>
         <div class="ov-body">
@@ -150,12 +125,11 @@
           </button>
           <h2 id="permTitle">دسترسی به موقعیت مکانی</h2>
           <p class="modal-text">
-            برای انتخاب موقعیت فعلی شما، لازم است دسترسی موقعیت مکانی را فعال
-            کنید.
+            برای انتخاب موقعیت فعلی شما، لازم است دسترسی موقعیت مکانی را فعال کنید.
           </p>
           <p id="permHint" class="modal-sub hidden">
-            مرورگر قبلاً دسترسی را بسته است. جاوااسکریپت نمی‌تواند این محدودیت
-            را دور بزند؛ از تنظیمات سایت مرورگر، دسترسی Location را مجاز کنید.
+            مرورگر قبلاً دسترسی را بسته است. جاوااسکریپت نمی‌تواند این محدودیت را دور بزند؛ از
+            تنظیمات سایت مرورگر، دسترسی Location را مجاز کنید.
           </p>
           <div class="modal-row">
             <button id="permRetry" class="cta">
@@ -195,8 +169,6 @@
 
       <div id="toast" class="toast" role="status"></div>
     </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="app.js"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

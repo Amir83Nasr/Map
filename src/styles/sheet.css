@@ -1,0 +1,74 @@
+/* ── BOTTOM SHEET ────────────────────────────────────────── */
+.sheet {
+  position: relative;
+  z-index: 500;
+  background: var(--card);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.14);
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+}
+.grab {
+  width: 44px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--line);
+  margin: 0px auto 20px;
+}
+.search,
+.sheet-row {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.sheet-row {
+  display: flex;
+  gap: 8px;
+}
+.cta {
+  flex: 1;
+  border: 0;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 8px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.cta:active {
+  background: var(--brand-d);
+  transform: scale(0.99);
+}
+.cta:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.cta .lucide {
+  width: 14px;
+  height: 14px;
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 16px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.ghost .lucide {
+  width: 16px;
+  height: 16px;
+}
