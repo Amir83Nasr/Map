@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>آزمایشگاه انتخاب موقعیت</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-row">
+      <h1>انتخاب موقعیت</h1>
+      <button id="devToggle" class="icon-btn" aria-label="پنل توسعه">⚙</button>
+    </div>
+    <div class="modes" role="tablist" aria-label="حالت انتخاب">
+      <button data-mode="fixed" class="mode active">نشانگر ثابت</button>
+      <button data-mode="drag" class="mode">پین متحرک</button>
+      <button data-mode="cross" class="mode">کراس‌هیر</button>
+      <button data-mode="tap" class="mode">ضربه روی نقشه</button>
+      <button data-mode="search" class="mode">جستجو + پین</button>
+      <button data-mode="gps" class="mode">موقعیت فعلی</button>
+    </div>
+    <div id="searchBar" class="search hidden">
+      <input id="searchInput" type="search" placeholder="جستجوی آدرس، خیابان، محله..." autocomplete="off">
+      <button id="searchBtn" class="btn-small">جستجو</button>
+      <div id="results" class="results"></div>
+    </div>
+  </header>
+
+  <main class="map-wrap">
+    <div id="map"></div>
+    <div id="centerPin" class="center-pin">📍</div>
+    <div id="crosshair" class="crosshair hidden"><span></span></div>
+    <button id="gpsBtn" class="gps" aria-label="موقعیت فعلی">◎</button>
+    <div id="hint" class="hint"></div>
+  </main>
+
+  <section class="sheet" aria-live="polite">
+    <div class="grab"></div>
+    <p id="addrLabel" class="addr-label">موقعیت انتخاب‌شده</p>
+    <p id="addr" class="addr skeleton">در حال تعیین آدرس...</p>
+    <p id="coords" class="coords">—</p>
+    <div class="sheet-row">
+      <button id="confirm" class="cta">تأیید این موقعیت</button>
+      <button id="pickOnMap" class="ghost">انتخاب روی نقشه</button>
+    </div>
+  </section>
+
+  <aside id="devPanel" class="dev hidden">
+    <h2>پنل آزمایش</h2>
+    <label>موقعیت پیش‌فرض
+      <select id="devDefault">
+        <option value="34.6416,50.8764" selected>قم</option>
+        <option value="35.6892,51.3890">تهران</option>
+        <option value="32.6546,51.6680">اصفهان</option>
+        <option value="29.5918,52.5837">شیراز</option>
+        <option value="36.2605,59.6168">مشهد</option>
+        <option value="38.0792,46.2887">تبریز</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="devCoords" checked> نمایش مختصات</label>
+    <label><input type="checkbox" id="devAddr" checked> نمایش آدرس</label>
+    <label><input type="checkbox" id="devNoGps"> شبیه‌سازی خطای GPS</label>
+    <label><input type="checkbox" id="devLoad"> شبیه‌سازی لودینگ</label>
+    <label><input type="checkbox" id="devGeoErr"> شبیه‌سازی خطای آدرس</label>
+    <dl class="dev-read">
+      <div><dt>lat</dt><dd id="devLat">—</dd></div>
+      <div><dt>lng</dt><dd id="devLng">—</dd></div>
+      <div><dt>mode</dt><dd id="devMode">fixed</dd></div>
+      <div><dt>address</dt><dd id="devAddress">—</dd></div>
+    </dl>
+  </aside>
+
+  <div id="toast" class="toast" role="status"></div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
