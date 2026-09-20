@@ -21,14 +21,6 @@
 .maplibregl-map {
   font-family: var(--font);
 }
-/* Attribution: Snapp-like bottom-left credit, out of map interactions. */
-.maplibregl-ctrl-attrib {
-  font-size: 10px;
-  background: rgba(255, 255, 255, 0.85);
-}
-.maplibregl-ctrl-attrib a {
-  color: inherit;
-}
 .center-pin {
   position: absolute;
   top: 50%;

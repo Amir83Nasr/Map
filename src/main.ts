@@ -9,6 +9,7 @@ import './styles/toast.css';
 import './styles/desktop.css';
 import { createMap } from './features/map-view.js';
 import { createSelection } from './features/selection.js';
+import { trySnapToRoad } from './features/snap.js';
 import { initLocate } from './features/locate.js';
 import { initOverlay } from './features/overlay.js';
 import { initSearchHost } from './features/search.js';
@@ -34,7 +35,13 @@ map.onMove(
     state.lat = lat;
     state.lng = lng;
   },
-  (lat, lng) => selection.setSelected(lat, lng),
+  (lat, lng) => {
+    const snap = trySnapToRoad(map.map, lat, lng);
+    if (snap) {
+      map.snapTo(snap.lat, snap.lng);
+      selection.setSelected(snap.lat, snap.lng);
+    } else selection.setSelected(lat, lng);
+  },
 );
 
 // ── GPS / PERMISSION ────────────────────────────────────────

@@ -35,5 +35,3 @@ export const LABEL_PLACE = '#52565c';
 export const LABEL_HALO = '#f1f3f5';
 
 export const POI_COLOR = '#7a7f87';
-
-export const ATTRIBUTION_BG = 'rgba(255, 255, 255, 0.85)';

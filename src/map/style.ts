@@ -32,7 +32,12 @@ import {
 // Source: OpenFreeMap planet tiles (no API key).
 // Expressions use ["coalesce", name:fa, name:nonlatin, name, name:latin]
 // so Persian labels win; tiles carry Persian mostly in name:nonlatin.
-// Glyphs come from OpenFreeMap (Noto Sans covers Arabic ranges).
+// Glyphs are self-hosted IRANYekanX PBFs (public/fonts/), generated with:
+//   fontnik build-glyphs IRANYekanX-Regular.ttf public/fonts/
+// (convert the repo's woff2 to TTF first: python3 -c
+// "from fontTools.ttLib import TTFont; f=TTFont('IRANYekanX-Regular.woff2');
+// f.flavor=None; f.save('IRANYekanX-Regular.ttf')").
+// MapLibre v6 shapes RTL/Arabic natively, no RTL plugin needed.
 
 const FA = [
   'coalesce',
@@ -49,8 +54,9 @@ const FA_LINE = [
   ['get', 'name:latin'],
 ];
 
-const REGULAR = ['Noto Sans Regular'];
-const BOLD = ['Noto Sans Bold'];
+const REGULAR = ['IRANYekanX Regular'];
+// ponytail: single Regular weight only; add real Bold PBFs + stack when Bold file lands.
+const BOLD = ['IRANYekanX Regular'];
 
 const LINE_SYSTEM = ['LineString', 'MultiLineString'];
 const POINT_SYSTEM = ['MultiPoint', 'Point'];
@@ -973,7 +979,7 @@ const layers = [
 export const MAP_STYLE = {
   version: 8,
   name: 'snapp-like',
-  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  glyphs: `${import.meta.env.BASE_URL}fonts/{fontstack}/{range}.pbf`,
   sprite: 'https://tiles.openfreemap.org/sprites/ofm_f384/ofm',
   sources: {
     openmaptiles: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' },
