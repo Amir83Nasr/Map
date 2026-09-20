@@ -463,56 +463,15 @@ body {
   padding: 4px 12px;
   min-height: 50px;
 }
-.city-btn {
-  border: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  cursor: pointer;
-  padding: 8px 0;
-}
-.city-btn .lucide {
-  width: 16px;
-  height: 16px;
-  color: var(--mut);
-}
-.vdiv {
-  width: 1px;
-  height: 24px;
-  background: #d3d7de;
-  flex: 0 0 auto;
-}
 .search-bar .search-field input {
   border: 0;
   background: transparent;
-  padding: 10px 0;
+  padding: 10px 0 10px 40px;
   min-height: 42px;
   text-align: right;
 }
 .search-bar .search-field input:focus {
   border: 0;
-}
-.mic-btn {
-  border: 0;
-  background: transparent;
-  color: var(--mut);
-  width: 40px;
-  height: 40px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.mic-btn .lucide {
-  width: 20px;
-  height: 20px;
 }
 .ov-body {
   flex: 1;

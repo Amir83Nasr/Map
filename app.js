@@ -12,7 +12,6 @@ const els = {
   overlay: $("searchOverlay"), openBtn: $("searchOpen"),
   backBtn: $("searchBack"), label: $("searchLabel"),
   home: $("homeContent"), recentList: $("recentList"), suggestList: $("suggestList"),
-  mic: $("micBtn"), city: $("cityBtn"),
 };
 
 // ── MAP ──────────────────────────────────────────────────
@@ -243,7 +242,14 @@ els.modal.addEventListener("click", (e) => { if (e.target === els.modal) hideMod
 // ── SEARCH OVERLAY ───────────────────────────────────────
 const LS_RECENT = "mt:recent", LS_FAV = "mt:fav";
 const SUGGEST = [
-  { name: "شهید نجفی، مجموعه ورزشی شهیدان جودی", addr: "شهر قم، شهر قائم، شهید نجفی، مجموعه ورزشی…" },
+  { name: "صفائیه، قم", addr: "محله صفائیه، شهر قم", lat: 34.6327, lng: 50.8713 },
+  { name: "زنبیل‌آباد، قم", addr: "محله زنبیل‌آباد، شهر قم", lat: 34.6221, lng: 50.8912 },
+  { name: "عطاران، قم", addr: "محله عطاران، شهر قم", lat: 34.6548, lng: 50.8895 },
+  { name: "باجک، قم", addr: "محله باجک، شهر قم", lat: 34.6601, lng: 50.8823 },
+  { name: "دورشهر، قم", addr: "محله دورشهر، شهر قم", lat: 34.6442, lng: 50.8744 },
+  { name: "نیروگاه، قم", addr: "محله نیروگاه، شهر قم", lat: 34.6712, lng: 50.8851 },
+  { name: "سالاریه، قم", addr: "محله سالاریه، شهر قم", lat: 34.6289, lng: 50.8624 },
+  { name: "پردیسان، قم", addr: "شهرک پردیسان، شهر قم", lat: 34.6021, lng: 50.8412 },
 ];
 function loadJSON(k, fb) {
   try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : fb; }
@@ -293,7 +299,11 @@ function renderHome(q) {
   for (const s of sug) {
     const { el, favEl } = histRow({ name: s.name, addr: s.addr, right: "pin", favOn: isFav(s.name) });
     favEl.onclick = (e) => { e.stopPropagation(); toggleFav(s.name); favEl.classList.toggle("on"); };
-    el.onclick = () => { clearTimeout(searchTimer); search(s.name); };
+    el.onclick = () => {
+      pushRecent({ name: s.name, addr: s.addr, lat: s.lat, lng: s.lng });
+      closeSearch();
+      setSelected(s.lat, s.lng, { moveMap: true });
+    };
     els.suggestList.appendChild(el);
   }
   refreshIcons();
@@ -385,8 +395,6 @@ els.searchInput.addEventListener("keydown", (e) => {
 document.querySelectorAll(".fav-chip").forEach((c) => {
   c.onclick = () => { els.searchInput.value = c.dataset.q; renderHome(c.dataset.q); els.home.hidden = false; els.results.innerHTML = ""; };
 });
-if (els.mic) els.mic.onclick = () => toast("جست‌وجوی صوتی به‌زودی");
-if (els.city) els.city.onclick = () => toast("انتخاب شهر به‌زودی");
 
 // ── SHEET ACTIONS ────────────────────────────────────────
 els.confirm.onclick = async () => {
