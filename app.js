@@ -12,6 +12,8 @@ const els = {
   overlay: $("searchOverlay"), openBtn: $("searchOpen"),
   backBtn: $("searchBack"), label: $("searchLabel"),
   home: $("homeContent"), suggestList: $("suggestList"),
+  deskInput: $("deskInput"), deskHome: $("deskHome"),
+  deskSuggest: $("deskSuggest"), deskResults: $("deskResults"),
 };
 
 // ── MAP ──────────────────────────────────────────────────
@@ -119,7 +121,7 @@ async function reverseGeocode(lat, lng) {
 
 async function searchLocation(query) {
   const r = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=fa&limit=5&q=${encodeURIComponent(enDigits(query))}`,
+    `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=fa&limit=5&viewbox=50.35,35.05,51.45,34.15&bounded=1&q=${encodeURIComponent(enDigits(query))}`,
     { headers: { Accept: "application/json" } }
   );
   if (!r.ok) throw new Error("http " + r.status);
@@ -249,6 +251,18 @@ const SUGGEST = [
   { name: "نیروگاه، قم", addr: "محله نیروگاه، شهر قم", lat: 34.6712, lng: 50.8851 },
   { name: "سالاریه، قم", addr: "محله سالاریه، شهر قم", lat: 34.6289, lng: 50.8624 },
   { name: "پردیسان، قم", addr: "شهرک پردیسان، شهر قم", lat: 34.6021, lng: 50.8412 },
+  { name: "جمکران، قم", addr: "محله جمکران، شهر قم", lat: 34.5853, lng: 50.9068 },
+  { name: "حرم، قم", addr: "محله حرم، شهر قم", lat: 34.6448, lng: 50.8791 },
+  { name: "چهارمردان، قم", addr: "محله چهارمردان، شهر قم", lat: 34.6401, lng: 50.8873 },
+  { name: "آذر، قم", addr: "محله آذر، شهر قم", lat: 34.6492, lng: 50.8965 },
+  { name: "بلوار امین، قم", addr: "محله بلوار امین، شهر قم", lat: 34.6248, lng: 50.8792 },
+  { name: "بنیاد، قم", addr: "محله بنیاد، شهر قم", lat: 34.6475, lng: 50.8985 },
+  { name: "نوبهار، قم", addr: "محله نوبهار، شهر قم", lat: 34.6623, lng: 50.8952 },
+  { name: "دروازه ری، قم", addr: "محله دروازه ری، شهر قم", lat: 34.6352, lng: 50.8958 },
+  { name: "توحید، قم", addr: "محله توحید، شهر قم", lat: 34.6685, lng: 50.8748 },
+  { name: "فرهنگیان، قم", addr: "محله فرهنگیان، شهر قم", lat: 34.6105, lng: 50.8702 },
+  { name: "شهرقائم، قم", addr: "شهرک قائم، شهر قم", lat: 34.6158, lng: 50.8505 },
+  { name: "۱۹ دی، قم", addr: "محله ۱۹ دی، شهر قم", lat: 34.6558, lng: 50.9055 },
 ];
 function histRow({ name, addr }) {
   const b = document.createElement("button");
@@ -357,6 +371,64 @@ els.searchInput.addEventListener("input", () => {
 els.searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") { clearTimeout(searchTimer); submitSearch(); }
 });
+
+// ── DESK SEARCH (desktop sidebar, inline) ──────────────────
+let deskTimer = 0;
+function deskPick(lat, lng) {
+  setSelected(lat, lng, { moveMap: true, zoom: 16 });
+}
+function renderDeskHome(q) {
+  if (!els.deskSuggest) return;
+  const needle = enDigits(q || "").trim();
+  const match = (t) => !needle || String(t).includes(needle);
+  els.deskSuggest.innerHTML = "";
+  const sug = SUGGEST.filter((s) => match(s.name) || match(s.addr));
+  for (const s of sug) {
+    const el = histRow({ name: s.name, addr: s.addr });
+    el.onclick = () => deskPick(s.lat, s.lng);
+    els.deskSuggest.appendChild(el);
+  }
+  refreshIcons();
+}
+async function deskSearch(q) {
+  if (!els.deskResults) return;
+  els.deskHome.hidden = true;
+  els.deskResults.innerHTML = `<div class="err">در حال جستجو...</div>`;
+  try {
+    const list = await searchLocation(q);
+    if (!list.length) {
+      els.deskResults.innerHTML = `<div class="err">نتیجه‌ای پیدا نشد؛ عبارت دیگری امتحان کنید</div>`;
+      return;
+    }
+    els.deskResults.innerHTML = "";
+    for (const it of list) {
+      const name = String(it.display_name).split(",")[0];
+      const b = document.createElement("button");
+      b.className = "result-card";
+      b.innerHTML = `<span class="ic"><i data-lucide="map-pin"></i></span><span><b></b><small></small></span>`;
+      b.querySelector("b").textContent = faStr(name);
+      b.querySelector("small").textContent = faStr(it.display_name);
+      b.onclick = () => deskPick(parseFloat(it.lat), parseFloat(it.lon));
+      els.deskResults.appendChild(b);
+    }
+    refreshIcons();
+  } catch {
+    els.deskResults.innerHTML = `<div class="err">خطا در جستجو؛ اتصال را بررسی کنید</div>`;
+  }
+}
+if (els.deskInput) {
+  renderDeskHome("");
+  els.deskInput.addEventListener("input", () => {
+    clearTimeout(deskTimer);
+    const q = els.deskInput.value.trim();
+    if (q.length < 1) { els.deskResults.innerHTML = ""; els.deskHome.hidden = false; renderDeskHome(""); return; }
+    if (q.length < 3) { renderDeskHome(q); els.deskHome.hidden = false; els.deskResults.innerHTML = ""; return; }
+    deskTimer = setTimeout(() => deskSearch(q), 600);
+  });
+  els.deskInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { clearTimeout(deskTimer); const q = els.deskInput.value.trim(); if (q) deskSearch(q); }
+  });
+}
 
 // ── CONFIRM DIALOG ─────────────────────────────────────────
 const confirmModal = $("confirmModal"), confirmAddress = $("confirmAddress"),
