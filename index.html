@@ -35,21 +35,20 @@
         <section class="sheet" aria-live="polite">
           <div class="grab" aria-hidden="true"></div>
           <div id="searchBar" class="search">
-            <input
-              id="searchInput"
-              type="search"
-              placeholder="جستجوی آدرس یا مکان"
-              autocomplete="off"
-              aria-label="جستجو"
-            />
-            <button id="searchBtn" class="btn-small">
-              <i data-lucide="search"></i>جستجو
-            </button>
+            <div class="search-field">
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="جستجوی آدرس یا مکان"
+                autocomplete="off"
+                aria-label="جستجو"
+              />
+              <span class="search-ic" aria-hidden="true"
+                ><i data-lucide="search"></i
+              ></span>
+            </div>
             <div id="results" class="results" hidden></div>
           </div>
-          <p id="addrLabel" class="addr-label">مبدا</p>
-          <p id="addr" class="addr skeleton">در حال تعیین آدرس...</p>
-          <p id="coords" class="coords">—</p>
           <div class="sheet-row">
             <button id="confirm" class="cta">تایید مبدا</button>
           </div>

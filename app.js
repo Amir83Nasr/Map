@@ -5,7 +5,6 @@ const S = {
 };
 const $ = (id) => document.getElementById(id);
 const els = {
-  addr: $("addr"), coords: $("coords"),
   toast: $("toast"), gps: $("gpsBtn"),
   confirm: $("confirm"), results: $("results"),
   searchInput: $("searchInput"), wrap: document.querySelector(".map-wrap"),
@@ -50,9 +49,7 @@ function scheduleResolve(lat, lng, delay = 600) {
 async function resolveAddress(lat, lng) {
   const seq = ++revSeq;
   S.resolving = true;
-  els.addr.classList.add("skeleton");
-  els.addr.textContent = "در حال پیدا کردن آدرس...";
-  renderCoords();
+  els.searchInput.placeholder = "در حال پیدا کردن آدرس...";
   try {
     const text = await reverseGeocode(lat, lng);
     if (seq !== revSeq) return;
@@ -71,13 +68,11 @@ async function resolveAddress(lat, lng) {
 function fa(n, d = 5) {
   return Number(n).toFixed(d).replace(/\d/g, (c) => "۰۱۲۳۴۵۶۷۸۹"[c]);
 }
-function renderCoords() {
-  els.coords.textContent = `Lat: ${S.lat.toFixed(5)} · Lng: ${S.lng.toFixed(5)}`;
-}
 function renderSheet() {
-  els.addr.classList.remove("skeleton");
-  els.addr.textContent = S.address || "آدرس دقیق پیدا نشد";
-  renderCoords();
+  els.searchInput.placeholder = "جستجوی آدرس یا مکان";
+  if (document.activeElement !== els.searchInput) {
+    els.searchInput.value = S.address || "";
+  }
 }
 
 function setSelected(lat, lng, { moveMap = false, resolve = true } = {}) {
@@ -100,7 +95,6 @@ map.on("movestart", () => els.wrap.classList.add("map-moving"));
 map.on("move", () => {
   const c = map.getCenter();
   S.lat = c.lat; S.lng = c.lng;
-  renderCoords();
 });
 map.on("moveend", () => {
   els.wrap.classList.remove("map-moving");
@@ -181,12 +175,14 @@ function submitSearch() {
   const q = els.searchInput.value.trim();
   if (q) { clearTimeout(searchTimer); search(q); }
 }
-$("searchBtn").onclick = submitSearch;
 els.searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
   const q = els.searchInput.value.trim();
   if (q.length < 3) { els.results.hidden = true; els.results.innerHTML = ""; return; }
   searchTimer = setTimeout(() => search(q), 600);
+});
+els.searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { clearTimeout(searchTimer); submitSearch(); }
 });
 
 // ── SHEET ACTIONS ────────────────────────────────────────
