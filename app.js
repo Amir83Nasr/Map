@@ -191,7 +191,7 @@ els.confirm.onclick = async () => {
   els.confirm.textContent = "در حال ثبت...";
   await new Promise((r) => setTimeout(r, 800));
   els.confirm.disabled = false;
-  els.confirm.textContent = "تأیید مبدأ";
+  els.confirm.textContent = "تایید مبدا";
   toast(`موقعیت ثبت شد (${fa(S.lat)}, ${fa(S.lng)})`);
   renderSheet();
 };

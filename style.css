@@ -21,8 +21,8 @@
   --ink: #111;
   --mut: #6b7280;
   --line: #e5e7eb;
-  --brand: #22a958;
-  --brand-d: #22a958;
+  --brand: oklch(48% 0.12 240);
+  --brand-d: oklch(48% 0.12 240);
   --r: 16px;
   --sh: 0 8px 28px rgba(0, 0, 0, 0.14);
   --font: "IRANYekanX", Tahoma, system-ui, -apple-system, sans-serif;
@@ -78,14 +78,83 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -92%);
+  width: 72px;
+  transform: translate(-50%, calc(-100% + 8px));
   z-index: 400;
   pointer-events: none;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  transition: transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.map-moving .center-pin {
-  transform: translate(-50%, -104%) scale(1.12);
+.pin-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: -11.5px;
+  z-index: 1;
+  transition: transform 0.3s cubic-bezier(0.32, 1.4, 0.64, 1);
+}
+.pin-head {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2f6bff;
+  border: 2px solid #fff;
+  /* box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3); */
+  display: grid;
+  place-items: center;
+  z-index: 4;
+}
+.pin-hole {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  z-index: 5;
+}
+.pin-stem {
+  width: 2px;
+  height: 10px;
+  margin-top: -2px;
+  border-radius: 3px;
+  background: #696b6f;
+  z-index: 3;
+}
+.pin-foot {
+  width: 9px;
+  height: 5px;
+  margin-top: -2px;
+  border-radius: 4px;
+  background: #fff;
+  /* box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); */
+  z-index: 2;
+}
+.pin-shadow {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.22s ease-out,
+    opacity 0.22s ease-out;
+}
+.pin-shadow::after {
+  content: "";
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #2b2f36;
+}
+.map-moving .pin-body {
+  transform: translateY(-14px) scale(0.88);
+  transform-origin: bottom center;
+}
+.map-moving .pin-shadow {
+  transform: scale(2);
+  opacity: 0.8;
 }
 
 /* ── MAP CONTROLS ──────────────────────────────────────── */

@@ -19,13 +19,12 @@
         <main class="map-wrap">
           <div id="map"></div>
           <div id="centerPin" class="center-pin" aria-hidden="true">
-            <svg viewBox="0 0 40 56" width="40" height="56" aria-hidden="true">
-              <path
-                d="M20 54 C20 54 4 31 4 17.5 A16 16 0 1 1 36 17.5 C36 31 20 54 20 54Z"
-                fill="#2F6BFF"
-              />
-              <circle cx="20" cy="17.5" r="6.5" fill="#fff" />
-            </svg>
+            <div class="pin-body">
+              <div class="pin-head"><div class="pin-hole"></div></div>
+              <div class="pin-stem"></div>
+              <div class="pin-foot"></div>
+            </div>
+            <div class="pin-shadow"></div>
           </div>
           <button id="gpsBtn" class="gps" aria-label="موقعیت فعلی">
             <i data-lucide="locate-fixed"></i>
