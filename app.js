@@ -9,6 +9,8 @@ const els = {
   confirm: $("confirm"), results: $("results"),
   searchInput: $("searchInput"), wrap: document.querySelector(".map-wrap"),
   modal: $("permModal"), permHint: $("permHint"),
+  overlay: $("searchOverlay"), openBtn: $("searchOpen"),
+  backBtn: $("searchBack"), label: $("searchLabel"),
 };
 
 // ── MAP ──────────────────────────────────────────────────
@@ -49,7 +51,7 @@ function scheduleResolve(lat, lng, delay = 600) {
 async function resolveAddress(lat, lng) {
   const seq = ++revSeq;
   S.resolving = true;
-  els.searchInput.placeholder = "در حال پیدا کردن آدرس...";
+  els.label.textContent = "در حال پیدا کردن آدرس...";
   try {
     const text = await reverseGeocode(lat, lng);
     if (seq !== revSeq) return;
@@ -69,10 +71,7 @@ function fa(n, d = 5) {
   return Number(n).toFixed(d).replace(/\d/g, (c) => "۰۱۲۳۴۵۶۷۸۹"[c]);
 }
 function renderSheet() {
-  els.searchInput.placeholder = "جستجوی آدرس یا مکان";
-  if (document.activeElement !== els.searchInput) {
-    els.searchInput.value = S.address || "";
-  }
+  els.label.textContent = S.address || "جستجوی آدرس یا مکان";
 }
 
 function setSelected(lat, lng, { moveMap = false, resolve = true } = {}) {
@@ -141,10 +140,46 @@ $("permRetry").onclick = () => { hideModal(); locate(); };
 $("permClose").onclick = hideModal;
 els.modal.addEventListener("click", (e) => { if (e.target === els.modal) hideModal(); });
 
+// ── SEARCH OVERLAY ───────────────────────────────────────
+let searchPushed = false;
+function openSearch() {
+  if (!els.overlay.hidden) return;
+  els.overlay.hidden = false;
+  els.results.innerHTML = "";
+  els.searchInput.value = "";
+  history.pushState({ search: true }, "");
+  searchPushed = true;
+  setTimeout(() => els.searchInput.focus(), 50);
+}
+function doCloseSearch() {
+  els.overlay.hidden = true;
+  clearTimeout(searchTimer);
+  els.results.innerHTML = "";
+  els.searchInput.value = "";
+  els.searchInput.blur();
+}
+function closeSearch() {
+  if (els.overlay.hidden) return;
+  const pushed = searchPushed;
+  searchPushed = false;
+  doCloseSearch();
+  if (pushed) history.back();
+}
+els.openBtn.onclick = openSearch;
+els.backBtn.onclick = closeSearch;
+window.addEventListener("popstate", () => {
+  if (!els.overlay.hidden) {
+    searchPushed = false;
+    doCloseSearch();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !els.overlay.hidden) closeSearch();
+});
+
 // ── SEARCH ───────────────────────────────────────────────
 let searchTimer = 0;
 async function search(q) {
-  els.results.hidden = false;
   els.results.innerHTML = `<div class="err">در حال جستجو...</div>`;
   try {
     const list = await searchLocation(q);
@@ -161,7 +196,7 @@ async function search(q) {
       b.querySelector("b").textContent = name;
       b.querySelector("small").textContent = it.display_name;
       b.onclick = () => {
-        els.results.hidden = true; els.results.innerHTML = "";
+        closeSearch();
         setSelected(parseFloat(it.lat), parseFloat(it.lon), { moveMap: true });
       };
       els.results.appendChild(b);
@@ -178,7 +213,7 @@ function submitSearch() {
 els.searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
   const q = els.searchInput.value.trim();
-  if (q.length < 3) { els.results.hidden = true; els.results.innerHTML = ""; return; }
+  if (q.length < 3) { els.results.innerHTML = ""; return; }
   searchTimer = setTimeout(() => search(q), 600);
 });
 els.searchInput.addEventListener("keydown", (e) => {

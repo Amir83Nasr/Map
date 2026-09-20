@@ -206,7 +206,7 @@ body {
   height: 4px;
   border-radius: 99px;
   background: var(--line);
-  margin: 4px auto 16px;
+  margin: 0px auto 20px;
 }
 .search,
 .sheet-row {
@@ -269,11 +269,38 @@ body {
 
 /* ── SEARCH ────────────────────────────────────────────── */
 .search {
-  position: relative;
   margin: 2px 0 16px;
+}
+.search-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0 12px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--mut);
+  cursor: pointer;
+  text-align: right;
+}
+.search-trigger .search-ic {
+  position: static;
+  transform: none;
+}
+.search-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.9;
 }
 .search-field {
   position: relative;
+  flex: 1;
 }
 .search-field input {
   width: 100%;
@@ -321,19 +348,64 @@ body {
   width: 18px;
   height: 18px;
 }
-.results {
-  position: absolute;
-  bottom: 52px;
-  right: 0;
-  left: 0;
+/* ── SEARCH OVERLAY ────────────────────────────────────── */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding: calc(12px + env(safe-area-inset-top)) 16px
+    calc(16px + env(safe-area-inset-bottom));
+  animation: sheetUp 0.25s ease-out;
+}
+.search-overlay[hidden] {
+  display: none;
+}
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.search-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+}
+.search-back {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+}
+.search-back .lucide {
+  width: 18px;
+  height: 18px;
+}
+.results-full {
+  flex: 1;
+  max-width: 560px;
+  width: 100%;
+  margin: 12px auto 0;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: var(--sh);
-  overflow: hidden;
-  z-index: 600;
-  max-height: 260px;
   overflow-y: auto;
+  min-height: 0;
 }
 .result-card {
   display: flex;
@@ -371,7 +443,7 @@ body {
   color: var(--mut);
   line-height: 1.8;
 }
-.results .err {
+.results-full .err {
   padding: 12px;
   font-size: 13px;
   color: var(--mut);
