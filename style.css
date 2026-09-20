@@ -402,6 +402,35 @@ body {
   width: 18px;
   height: 18px;
 }
+.clear-btn {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mut);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.clear-btn .lucide {
+  width: 16px;
+  height: 16px;
+}
+.clear-btn[hidden] {
+  display: none;
+}
+.search-field.has-text .search-ic {
+  display: none;
+}
+.search-bar .clear-btn {
+  left: 0;
+}
 /* ── SEARCH OVERLAY ────────────────────────────────────── */
 .search-overlay {
   position: fixed;

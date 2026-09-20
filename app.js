@@ -14,6 +14,7 @@ const els = {
   home: $("homeContent"), suggestList: $("suggestList"),
   deskInput: $("deskInput"), deskHome: $("deskHome"),
   deskSuggest: $("deskSuggest"), deskResults: $("deskResults"),
+  searchClear: $("searchClear"), deskClear: $("deskClear"),
 };
 
 // ── MAP ──────────────────────────────────────────────────
@@ -33,6 +34,26 @@ L.tileLayer(TILE_URL, {
 
 if (window.lucide) lucide.createIcons();
 function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+// ── CLEAR BUTTON ───────────────────────────────────────────
+function wireClear(input, btn, onClear) {
+  if (!input || !btn) return;
+  const field = input.closest(".search-field");
+  const toggle = () => {
+    const has = input.value.length > 0;
+    btn.hidden = !has;
+    if (field) field.classList.toggle("has-text", has);
+  };
+  input.addEventListener("input", toggle);
+  btn.addEventListener("click", () => {
+    input.value = "";
+    toggle();
+    if (onClear) onClear();
+    input.focus();
+  });
+  toggle();
+  refreshIcons();
+}
 
 // ── QOM WARM CACHE ───────────────────────────────────────
 // ponytail: حافظه HTTP مرورگر کافی است؛ آفلاین واقعی (Service Worker) اضافه نشد، لازم شد اضافه کن
@@ -140,7 +161,7 @@ async function resolveAddress(lat, lng) {
   try {
     const text = await reverseGeocode(lat, lng);
     if (seq !== revSeq) return;
-    S.address = text;
+    S.address = shortAddr(text);
   } catch {
     if (seq !== revSeq) return;
     S.address = "";
@@ -163,6 +184,20 @@ function enDigits(s) {
   return String(s)
     .replace(/[۰-۹]/g, (c) => "۰۱۲۳۴۵۶۷۸۹".indexOf(c))
     .replace(/[٠-٩]/g, (c) => "٠١٢٣٤٥٦٧٨٩".indexOf(c));
+}
+function shortAddr(display) {
+  if (!display) return "";
+  const parts = String(display).split(",").map((s) => s.trim()).filter(Boolean);
+  const isDrop = (p) => {
+    if (/^(ایران|Iran)$/i.test(p)) return true;
+    if (/^استان\b/.test(p)) return true;
+    if (/^شهرستان\b/.test(p)) return true;
+    if (/^بخش\b/.test(p)) return true;
+    const en = enDigits(p);
+    if (/^[\d\s\-–—]+$/.test(en)) return true;
+    return false;
+  };
+  return parts.filter((p) => !isDrop(p)).slice(0, 4).reverse().join(", ");
 }
 function renderSheet() {
   els.label.textContent = S.address ? faStr(S.address) : "جستجوی آدرس یا مکان";
@@ -263,14 +298,35 @@ const SUGGEST = [
   { name: "فرهنگیان، قم", addr: "محله فرهنگیان، شهر قم", lat: 34.6105, lng: 50.8702 },
   { name: "شهرقائم، قم", addr: "شهرک قائم، شهر قم", lat: 34.6158, lng: 50.8505 },
   { name: "۱۹ دی، قم", addr: "محله ۱۹ دی، شهر قم", lat: 34.6558, lng: 50.9055 },
-];
+  { name: "انقلاب، قم", addr: "خیابان انقلاب، شهر قم", lat: 34.6462, lng: 50.8915 },
+  { name: "شهدا، قم", addr: "خیابان شهدا، شهر قم", lat: 34.6425, lng: 50.8831 },
+  { name: "خاکفرج، قم", addr: "محله خاکفرج، شهر قم", lat: 34.6798, lng: 50.9012 },
+  { name: "کیوانفر، قم", addr: "محله کیوانفر، شهر قم", lat: 34.6172, lng: 50.8856 },
+  { name: "شیخ‌آباد، قم", addr: "محله شیخ‌آباد، شهر قم", lat: 34.6582, lng: 50.8718 },
+  { name: "عسگریه، قم", addr: "محله عسگریه، شهر قم", lat: 34.6305, lng: 50.9018 },
+  { name: "یزدانشهر، قم", addr: "محله یزدانشهر، شهر قم", lat: 34.6012, lng: 50.8628 },
+  { name: "شهرک مهدیه، قم", addr: "شهرک مهدیه، شهر قم", lat: 34.6258, lng: 50.8452 },
+  { name: "شهرک امام حسن، قم", addr: "شهرک امام حسن، شهر قم", lat: 34.6358, lng: 50.8521 },
+  { name: "انسجام، قم", addr: "محله انسجام، شهر قم", lat: 34.6058, lng: 50.8752 },
+  { name: "زاویه، قم", addr: "محله زاویه، شهر قم", lat: 34.6385, lng: 50.8682 },
+  { name: "سمیه، قم", addr: "خیابان سمیه، شهر قم", lat: 34.6521, lng: 50.8842 },
+  { name: "صدوق، قم", addr: "خیابان صدوق، شهر قم", lat: 34.6198, lng: 50.8725 },
+  { name: "مطهری، قم", addr: "خیابان مطهری، شهر قم", lat: 34.6485, lng: 50.8878 },
+  { name: "امام حسین، قم", addr: "میدان امام حسین، شهر قم", lat: 34.6512, lng: 50.8932 },
+  { name: "هفت‌تیر، قم", addr: "خیابان هفت‌تیر، شهر قم", lat: 34.6442, lng: 50.8995 },
+  { name: "حافظ، قم", addr: "خیابان حافظ، شهر قم", lat: 34.6368, lng: 50.8785 },
+  { name: "معلم، قم", addr: "میدان معلم، شهر قم", lat: 34.6275, lng: 50.8942 },
+  { name: "کشاورز، قم", addr: "محله کشاورز، شهر قم", lat: 34.6642, lng: 50.8885 },
+  { name: "کلهری، قم", addr: "منطقه کلهری، شهر قم", lat: 34.6211, lng: 50.9055 },
+  { name: "شهرک ولیعصر، قم", addr: "شهرک ولیعصر، شهر قم", lat: 34.6125, lng: 50.8585 },
+].sort((a, b) => a.name.localeCompare(b.name, "fa"));
 function histRow({ name, addr }) {
   const b = document.createElement("button");
   b.className = "hist-row";
   b.type = "button";
   b.innerHTML = `<span class="side-ic right"><i data-lucide="map-pin"></i></span><span class="t"><b></b><small></small></span>`;
-  b.querySelector("b").textContent = name;
-  b.querySelector("small").textContent = addr;
+  b.querySelector("b").textContent = String(name).replace(/،\s*قم\s*$/, "");
+  b.querySelector("small").textContent = String(addr).split(/[،,]/).map((s) => s.trim()).filter(Boolean).reverse().join("، ");
   return b;
 }
 function renderHome(q) {
@@ -294,6 +350,7 @@ function openSearch() {
   els.overlay.hidden = false;
   els.results.innerHTML = "";
   els.searchInput.value = "";
+  els.searchInput.dispatchEvent(new Event("input"));
   renderHome("");
   els.home.hidden = false;
   history.pushState({ search: true }, "");
@@ -306,6 +363,7 @@ function doCloseSearch() {
   clearTimeout(searchTimer);
   els.results.innerHTML = "";
   els.searchInput.value = "";
+  els.searchInput.dispatchEvent(new Event("input"));
   els.searchInput.blur();
 }
 function closeSearch() {
@@ -345,7 +403,7 @@ async function search(q) {
       b.className = "result-card";
       b.innerHTML = `<span class="ic"><i data-lucide="map-pin"></i></span><span><b></b><small></small></span>`;
       b.querySelector("b").textContent = faStr(name);
-      b.querySelector("small").textContent = faStr(it.display_name);
+      b.querySelector("small").textContent = faStr(shortAddr(it.display_name));
       b.onclick = () => {
         closeSearch();
         setSelected(parseFloat(it.lat), parseFloat(it.lon), { moveMap: true, zoom: 14 });
@@ -407,7 +465,7 @@ async function deskSearch(q) {
       b.className = "result-card";
       b.innerHTML = `<span class="ic"><i data-lucide="map-pin"></i></span><span><b></b><small></small></span>`;
       b.querySelector("b").textContent = faStr(name);
-      b.querySelector("small").textContent = faStr(it.display_name);
+      b.querySelector("small").textContent = faStr(shortAddr(it.display_name));
       b.onclick = () => deskPick(parseFloat(it.lat), parseFloat(it.lon));
       els.deskResults.appendChild(b);
     }
@@ -461,4 +519,16 @@ confirmFinal.onclick = async () => {
 };
 
 // ── INIT ─────────────────────────────────────────────────
+wireClear(els.searchInput, els.searchClear, () => {
+  clearTimeout(searchTimer);
+  els.results.innerHTML = "";
+  els.home.hidden = false;
+  renderHome("");
+});
+wireClear(els.deskInput, els.deskClear, () => {
+  clearTimeout(deskTimer);
+  if (els.deskResults) els.deskResults.innerHTML = "";
+  if (els.deskHome) els.deskHome.hidden = false;
+  renderDeskHome("");
+});
 setSelected(S.lat, S.lng);
