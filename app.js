@@ -1,6 +1,6 @@
 // ── STATE ────────────────────────────────────────────────
 const S = {
-  lat: 35.6892, lng: 51.3890,
+  lat: 34.6416, lng: 50.8764,
   address: "", resolving: false,
 };
 const $ = (id) => document.getElementById(id);
@@ -22,6 +22,20 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 if (window.lucide) lucide.createIcons();
 function refreshIcons() { if (window.lucide) lucide.createIcons(); }
 
+let myMarker = null;
+function showMyPos(lat, lng) {
+  if (myMarker) {
+    myMarker.setLatLng([lat, lng]);
+    return;
+  }
+  myMarker = L.marker([lat, lng], {
+    interactive: false,
+    keyboard: false,
+    zIndexOffset: 500,
+    icon: L.divIcon({ className: "my-wrap", html: '<div class="my-dot"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }),
+  }).addTo(map);
+}
+
 // ── GEOCODE API ──────────────────────────────────────────
 async function reverseGeocode(lat, lng) {
   const r = await fetch(
@@ -36,7 +50,7 @@ async function reverseGeocode(lat, lng) {
 
 async function searchLocation(query) {
   const r = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=fa&limit=5&q=${encodeURIComponent(query)}`,
+    `https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=fa&limit=5&q=${encodeURIComponent(enDigits(query))}`,
     { headers: { Accept: "application/json" } }
   );
   if (!r.ok) throw new Error("http " + r.status);
@@ -67,16 +81,25 @@ async function resolveAddress(lat, lng) {
 }
 
 // ── RENDER ───────────────────────────────────────────────
+const FA_D = "۰۱۲۳۴۵۶۷۸۹";
+function faStr(s) {
+  return String(s).replace(/\d/g, (c) => FA_D[c]);
+}
 function fa(n, d = 5) {
-  return Number(n).toFixed(d).replace(/\d/g, (c) => "۰۱۲۳۴۵۶۷۸۹"[c]);
+  return faStr(Number(n).toFixed(d));
+}
+function enDigits(s) {
+  return String(s)
+    .replace(/[۰-۹]/g, (c) => "۰۱۲۳۴۵۶۷۸۹".indexOf(c))
+    .replace(/[٠-٩]/g, (c) => "٠١٢٣٤٥٦٧٨٩".indexOf(c));
 }
 function renderSheet() {
-  els.label.textContent = S.address || "جستجوی آدرس یا مکان";
+  els.label.textContent = S.address ? faStr(S.address) : "جستجوی آدرس یا مکان";
 }
 
-function setSelected(lat, lng, { moveMap = false, resolve = true } = {}) {
+function setSelected(lat, lng, { moveMap = false, resolve = true, zoom } = {}) {
   S.lat = lat; S.lng = lng;
-  if (moveMap) map.setView([lat, lng], Math.max(map.getZoom(), 15));
+  if (moveMap) map.setView([lat, lng], zoom ?? Math.max(map.getZoom(), 15));
   if (resolve) scheduleResolve(lat, lng);
   else renderSheet();
 }
@@ -117,8 +140,8 @@ function locate() {
   navigator.geolocation.getCurrentPosition(
     (p) => {
       els.gps.classList.remove("locating");
-      setSelected(p.coords.latitude, p.coords.longitude, { moveMap: true });
-      toast("موقعیت فعلی شما ثبت شد");
+      showMyPos(p.coords.latitude, p.coords.longitude);
+      setSelected(p.coords.latitude, p.coords.longitude, { moveMap: true, zoom: 17 });
     },
     (err) => {
       els.gps.classList.remove("locating");
@@ -193,8 +216,8 @@ async function search(q) {
       const b = document.createElement("button");
       b.className = "result-card";
       b.innerHTML = `<span class="ic"><i data-lucide="map-pin"></i></span><span><b></b><small></small></span>`;
-      b.querySelector("b").textContent = name;
-      b.querySelector("small").textContent = it.display_name;
+      b.querySelector("b").textContent = faStr(name);
+      b.querySelector("small").textContent = faStr(it.display_name);
       b.onclick = () => {
         closeSearch();
         setSelected(parseFloat(it.lat), parseFloat(it.lon), { moveMap: true });
