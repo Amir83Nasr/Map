@@ -1,107 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html dir="rtl" lang="fa">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>آزمایشگاه مقایسه انتخاب موقعیت</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="app">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>انتخاب مبدأ</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <div class="layout">
+        <main class="map-wrap">
+          <div id="map"></div>
+          <div id="centerPin" class="center-pin" aria-hidden="true">
+            <svg viewBox="0 0 40 56" width="40" height="56" aria-hidden="true">
+              <path
+                d="M20 54 C20 54 4 31 4 17.5 A16 16 0 1 1 36 17.5 C36 31 20 54 20 54Z"
+                fill="#2F6BFF"
+              />
+              <circle cx="20" cy="17.5" r="6.5" fill="#fff" />
+            </svg>
+          </div>
+          <button id="gpsBtn" class="gps" aria-label="موقعیت فعلی">
+            <i data-lucide="locate-fixed"></i>
+          </button>
+        </main>
 
-  <header class="topbar">
-    <div class="topbar-row">
-      <h1>آزمایشگاه انتخاب موقعیت</h1>
-      <button id="devToggle" class="icon-btn" aria-label="مقایسه UX"><i data-lucide="settings-2"></i></button>
-    </div>
-    <nav class="modes" role="tablist" aria-label="الگوهای انتخاب موقعیت">
-      <button data-mode="snap" class="mode active" role="tab"><i data-lucide="navigation"></i>اسنپ</button>
-      <button data-mode="market" class="mode" role="tab"><i data-lucide="shopping-basket"></i>اسنپ مارکت</button>
-      <button data-mode="digi" class="mode" role="tab"><i data-lucide="package"></i>دیجی‌کالا</button>
-      <button data-mode="fixed" class="mode" role="tab"><i data-lucide="map-pin"></i>پین ثابت</button>
-      <button data-mode="drag" class="mode" role="tab"><i data-lucide="move"></i>پین قابل‌حرکت</button>
-      <button data-mode="cross" class="mode" role="tab"><i data-lucide="crosshair"></i>Crosshair</button>
-      <button data-mode="search" class="mode" role="tab"><i data-lucide="search"></i>جستجو + نقشه</button>
-    </nav>
-    <div id="searchBar" class="search">
-      <input id="searchInput" type="search" placeholder="جستجوی آدرس یا مکان" autocomplete="off" aria-label="جستجو">
-      <button id="searchBtn" class="btn-small"><i data-lucide="search"></i>جستجو</button>
-      <div id="results" class="results" hidden></div>
-    </div>
-  </header>
-
-  <div class="layout">
-    <main class="map-wrap">
-      <div id="map"></div>
-      <div id="centerPin" class="center-pin" aria-hidden="true"><i data-lucide="map-pin"></i></div>
-      <div id="crosshair" class="crosshair hidden" aria-hidden="true"><span></span></div>
-      <div class="zoom" aria-label="بزرگنمایی">
-        <button id="zoomIn" aria-label="نزدیک‌تر"><i data-lucide="plus"></i></button>
-        <button id="zoomOut" aria-label="دورتر"><i data-lucide="minus"></i></button>
+        <section class="sheet" aria-live="polite">
+          <div class="grab" aria-hidden="true"></div>
+          <div id="searchBar" class="search">
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="جستجوی آدرس یا مکان"
+              autocomplete="off"
+              aria-label="جستجو"
+            />
+            <button id="searchBtn" class="btn-small">
+              <i data-lucide="search"></i>جستجو
+            </button>
+            <div id="results" class="results" hidden></div>
+          </div>
+          <p id="addrLabel" class="addr-label">مبدا</p>
+          <p id="addr" class="addr skeleton">در حال تعیین آدرس...</p>
+          <p id="coords" class="coords">—</p>
+          <div class="sheet-row">
+            <button id="confirm" class="cta">تایید مبدا</button>
+          </div>
+        </section>
       </div>
-      <button id="gpsBtn" class="gps" aria-label="موقعیت فعلی"><i data-lucide="locate-fixed"></i></button>
-      <div id="hint" class="hint" role="status"></div>
-    </main>
 
-    <section class="sheet" aria-live="polite">
-      <div class="grab" aria-hidden="true"></div>
-      <p id="addrLabel" class="addr-label">موقعیت انتخاب‌شده</p>
-      <p id="addr" class="addr skeleton">در حال تعیین آدرس...</p>
-      <p id="addrMeta" class="meta hidden"></p>
-      <p id="coords" class="coords">—</p>
-      <div class="sheet-row">
-        <button id="confirm" class="cta">تأیید موقعیت</button>
-        <button id="ghostBtn" class="ghost hidden"></button>
+      <div
+        id="permModal"
+        class="modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="permTitle"
+      >
+        <div class="modal-card">
+          <button id="permClose" class="modal-close" aria-label="بستن">
+            <i data-lucide="x"></i>
+          </button>
+          <h2 id="permTitle">دسترسی به موقعیت مکانی</h2>
+          <p class="modal-text">
+            برای انتخاب موقعیت فعلی شما، لازم است دسترسی موقعیت مکانی را فعال
+            کنید.
+          </p>
+          <p id="permHint" class="modal-sub hidden">
+            مرورگر قبلاً دسترسی را بسته است. جاوااسکریپت نمی‌تواند این محدودیت
+            را دور بزند؛ از تنظیمات سایت مرورگر، دسترسی Location را مجاز کنید.
+          </p>
+          <div class="modal-row">
+            <button id="permRetry" class="cta">
+              <i data-lucide="locate-fixed"></i>فعال کردن دسترسی
+            </button>
+          </div>
+        </div>
       </div>
-    </section>
-  </div>
 
-  <div id="permModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="permTitle">
-    <div class="modal-card">
-      <h2 id="permTitle">دسترسی به موقعیت مکانی</h2>
-      <p class="modal-text">برای انتخاب موقعیت فعلی شما، لازم است دسترسی موقعیت مکانی را فعال کنید.</p>
-      <p id="permHint" class="modal-sub hidden">مرورگر قبلاً دسترسی را بسته است. جاوااسکریپت نمی‌تواند این محدودیت را دور بزند؛ از تنظیمات سایت مرورگر، دسترسی Location را مجاز کنید.</p>
-      <div class="modal-row">
-        <button id="permRetry" class="cta"><i data-lucide="locate-fixed"></i>فعال کردن دسترسی</button>
-        <button id="permManual" class="ghost"><i data-lucide="mouse-pointer-click"></i>انتخاب دستی روی نقشه</button>
-      </div>
+      <div id="toast" class="toast" role="status"></div>
     </div>
-  </div>
-
-  <aside id="devPanel" class="dev hidden" aria-label="پنل مقایسه UX">
-    <h2>مقایسه UX</h2>
-    <label>پرش به شهر
-      <select id="devDefault">
-        <option value="35.6892,51.3890" selected>تهران</option>
-        <option value="35.8400,50.9391">کرج</option>
-        <option value="36.2605,59.6168">مشهد</option>
-        <option value="32.6546,51.6680">اصفهان</option>
-        <option value="29.5918,52.5837">شیراز</option>
-      </select>
-    </label>
-    <label><input type="checkbox" id="devCoords" checked> نمایش مختصات</label>
-    <label><input type="checkbox" id="devAddr" checked> نمایش آدرس</label>
-    <label><input type="checkbox" id="devNoGps"> شبیه‌سازی رد دسترسی</label>
-    <label><input type="checkbox" id="devGeoErr"> شبیه‌سازی خطای GPS</label>
-    <label><input type="checkbox" id="devApiErr"> شبیه‌سازی خطای API</label>
-    <button id="devReset" class="btn-small"><i data-lucide="rotate-ccw"></i>ریست دمو</button>
-    <dl class="dev-read">
-      <div><dt>mode</dt><dd id="devMode">—</dd></div>
-      <div><dt>lat</dt><dd id="devLat">—</dd></div>
-      <div><dt>lng</dt><dd id="devLng">—</dd></div>
-      <div><dt>address</dt><dd id="devAddress">—</dd></div>
-      <div><dt>perm</dt><dd id="devPerm">—</dd></div>
-      <div><dt>geo</dt><dd id="devGeo">—</dd></div>
-      <div><dt>search</dt><dd id="devSearch">—</dd></div>
-      <div><dt>taps</dt><dd id="devTaps">—</dd></div>
-    </dl>
-  </aside>
-
-  <div id="toast" class="toast" role="status"></div>
-</div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<script src="app.js"></script>
-</body>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
