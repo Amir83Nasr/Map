@@ -11,6 +11,16 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link
+      rel="preconnect"
+      href="https://a.basemaps.cartocdn.com"
+      crossorigin
+    />
+    <link
+      rel="preconnect"
+      href="https://b.basemaps.cartocdn.com"
+      crossorigin
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -57,24 +67,50 @@
         aria-label="جستجو"
         hidden
       >
-        <div class="search-top">
-          <button id="searchBack" class="search-back" aria-label="بستن جستجو">
-            <i data-lucide="arrow-right"></i>
+        <div class="ov-head">
+          <h2>مبدأ</h2>
+          <button id="searchBack" class="ov-close" aria-label="بستن جستجو">
+            <i data-lucide="x"></i>
           </button>
+        </div>
+        <div class="search-bar">
+          <button id="cityBtn" class="city-btn" type="button">
+            شهر فعلی<i data-lucide="chevron-down"></i>
+          </button>
+          <span class="vdiv" aria-hidden="true"></span>
           <div class="search-field">
             <input
               id="searchInput"
               type="search"
-              placeholder="جستجوی آدرس یا مکان"
+              placeholder="جست‌وجوی مبدأ..."
               autocomplete="off"
               aria-label="جستجو"
             />
-            <span class="search-ic" aria-hidden="true"
-              ><i data-lucide="search"></i
-            ></span>
           </div>
+          <button id="micBtn" class="mic-btn" type="button" aria-label="جست‌وجوی صوتی">
+            <i data-lucide="mic"></i>
+          </button>
         </div>
-        <div id="results" class="results-full"></div>
+        <div class="ov-body">
+          <div id="homeContent">
+            <div class="fav-row">
+              <button class="fav-chip" type="button" data-q="خانه">
+                <span class="fav-star"><i data-lucide="star"></i></span>خانه
+              </button>
+              <button class="fav-chip" type="button" data-q="مدرسه">
+                <span class="fav-star"><i data-lucide="star"></i></span>مدرسه
+              </button>
+              <button class="fav-chip" type="button" data-q="مامان بزرگ">
+                <span class="fav-star"><i data-lucide="star"></i></span>مامان بزرگ
+              </button>
+            </div>
+            <h3 class="sec-t">جست‌وجوهای اخیر</h3>
+            <div id="recentList"></div>
+            <h3 class="sec-t">مکان‌های پیشنهادی</h3>
+            <div id="suggestList"></div>
+          </div>
+          <div id="results" class="results-list"></div>
+        </div>
       </div>
 
       <div

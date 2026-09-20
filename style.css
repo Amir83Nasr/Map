@@ -404,7 +404,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 700;
-  background: var(--bg);
+  background: #fff;
   display: flex;
   flex-direction: column;
   padding: calc(12px + env(safe-area-inset-top)) 16px
@@ -422,41 +422,204 @@ body {
     transform: translateY(0);
   }
 }
-.search-top {
+.ov-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 4px 0 12px;
+}
+.ov-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.ov-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+}
+.ov-close .lucide {
+  width: 22px;
+  height: 22px;
+}
+.search-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   max-width: 560px;
   width: 100%;
   margin: 0 auto;
+  background: #eceef2;
+  border-radius: 12px;
+  padding: 4px 12px;
+  min-height: 50px;
 }
-.search-back {
-  width: 44px;
-  height: 44px;
+.city-btn {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 8px 0;
+}
+.city-btn .lucide {
+  width: 16px;
+  height: 16px;
+  color: var(--mut);
+}
+.vdiv {
+  width: 1px;
+  height: 24px;
+  background: #d3d7de;
   flex: 0 0 auto;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: #fff;
+}
+.search-bar .search-field input {
+  border: 0;
+  background: transparent;
+  padding: 10px 0;
+  min-height: 42px;
+  text-align: right;
+}
+.search-bar .search-field input:focus {
+  border: 0;
+}
+.mic-btn {
+  border: 0;
+  background: transparent;
+  color: var(--mut);
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 50%;
   cursor: pointer;
   display: grid;
   place-items: center;
-  color: var(--ink);
 }
-.search-back .lucide {
-  width: 18px;
-  height: 18px;
+.mic-btn .lucide {
+  width: 20px;
+  height: 20px;
 }
-.results-full {
+.ov-body {
   flex: 1;
   max-width: 560px;
   width: 100%;
-  margin: 12px auto 0;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: var(--sh);
+  margin: 0 auto;
   overflow-y: auto;
   min-height: 0;
+}
+.fav-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: none;
+}
+.fav-row::-webkit-scrollbar {
+  display: none;
+}
+.fav-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 4px;
+}
+.fav-star {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #e9edff;
+  display: grid;
+  place-items: center;
+  color: #2f6bff;
+}
+.fav-star .lucide {
+  width: 16px;
+  height: 16px;
+  fill: #2f6bff;
+  stroke: #2f6bff;
+}
+.sec-t {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mut);
+  margin: 16px 0 2px;
+}
+.results-list {
+  padding-top: 8px;
+}
+.hist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: right;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  padding: 12px 4px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.hist-row .t {
+  flex: 1;
+  min-width: 0;
+}
+.hist-row .side-ic {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--mut);
+}
+.hist-row .side-ic .lucide {
+  width: 20px;
+  height: 20px;
+}
+.hist-row .side-ic.fav {
+  color: var(--mut);
+}
+.hist-row .side-ic.fav.on {
+  color: #2f6bff;
+}
+.hist-row .side-ic.fav.on .lucide {
+  fill: #2f6bff;
+  stroke: #2f6bff;
+}
+.hist-row .t b,
+.result-card b {
+  display: block;
+  font-size: 14px;
+}
+.hist-row .t small,
+.result-card small {
+  display: block;
+  font-size: 12px;
+  color: var(--mut);
+  line-height: 1.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .result-card {
   display: flex;
@@ -484,17 +647,7 @@ body {
   width: 14px;
   height: 14px;
 }
-.result-card b {
-  display: block;
-  font-size: 14px;
-}
-.result-card small {
-  display: block;
-  font-size: 12px;
-  color: var(--mut);
-  line-height: 1.8;
-}
-.results-full .err {
+.results-list .err {
   padding: 12px;
   font-size: 13px;
   color: var(--mut);

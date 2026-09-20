@@ -11,16 +11,86 @@ const els = {
   modal: $("permModal"), permHint: $("permHint"),
   overlay: $("searchOverlay"), openBtn: $("searchOpen"),
   backBtn: $("searchBack"), label: $("searchLabel"),
+  home: $("homeContent"), recentList: $("recentList"), suggestList: $("suggestList"),
+  mic: $("micBtn"), city: $("cityBtn"),
 };
 
 // ── MAP ──────────────────────────────────────────────────
-const map = L.map("map", { zoomControl: false, attributionControl: false }).setView([S.lat, S.lng], 14);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-  maxZoom: 19, subdomains: "abcd",
+const TILE_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+const map = L.map("map", {
+  zoomControl: false, attributionControl: false,
+  preferCanvas: true, fadeAnimation: false, worldCopyJump: true,
+  minZoom: 11, maxZoom: 19,
+  wheelDebounceTime: 60, wheelPxPerZoomLevel: 90,
+  maxBounds: [[34.15, 50.35], [35.05, 51.45]], maxBoundsViscosity: 1.0,
+}).setView([S.lat, S.lng], 14);
+L.tileLayer(TILE_URL, {
+  maxZoom: 19, maxNativeZoom: 19, subdomains: "abcd",
+  keepBuffer: 8, updateWhenIdle: false, unloadInvisibleTiles: false,
+  reuseTiles: true, crossOrigin: true,
 }).addTo(map);
 
 if (window.lucide) lucide.createIcons();
 function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+// ── QOM WARM CACHE ───────────────────────────────────────
+// ponytail: حافظه HTTP مرورگر کافی است؛ آفلاین واقعی (Service Worker) اضافه نشد، لازم شد اضافه کن
+const RETINA = (window.L && L.Browser.retina) ? "@2x" : "";
+function tileUrl(z, x, y) {
+  const n = 2 ** z;
+  const xx = ((x % n) + n) % n;
+  return TILE_URL.replace("{s}", "abcd"[(xx + y) & 3])
+    .replace("{z}", z).replace("{x}", xx).replace("{y}", y).replace("{r}", RETINA);
+}
+const _q = [];
+const _seen = new Set();
+let _active = 0;
+function pumpQom() {
+  while (_active < 4 && _q.length) {
+    const u = _q.shift();
+    _active++;
+    const img = new Image();
+    img.decoding = "async"; img.referrerPolicy = "no-referrer";
+    img.onload = img.onerror = () => { _active--; pumpQom(); };
+    img.src = u;
+  }
+}
+function queueTiles(z, cx, cy, r) {
+  for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) {
+    const u = tileUrl(z, cx + dx, cy + dy);
+    if (_seen.has(u)) continue;
+    _seen.add(u);
+    _q.push(u);
+  }
+  pumpQom();
+}
+function xyz(lat, lng, z) {
+  const n = 2 ** z;
+  const xt = Math.floor(((lng + 180) / 360) * n);
+  const rad = (lat * Math.PI) / 180;
+  const yt = Math.floor(((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * n);
+  return [xt, yt];
+}
+function prefetchQom(lat = S.lat, lng = S.lng, baseZ = 14) {
+  // حیاتی اول: زوم فعلی + همسایه، بدون انتظار load
+  const [cx0, cy0] = xyz(lat, lng, baseZ);
+  queueTiles(baseZ, cx0, cy0, 2);
+  const idle = (fn) => ("requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+  idle(() => {
+    for (const z of [baseZ + 1, baseZ - 1, baseZ + 2, baseZ - 2]) {
+      if (z < 11 || z > 16) continue;
+      const [cx, cy] = xyz(lat, lng, z);
+      queueTiles(z, cx, cy, z >= 14 ? 2 : 1);
+    }
+  });
+}
+function prefetchAround(lat, lng) {
+  const z = Math.round(map.getZoom());
+  const [cx, cy] = xyz(lat, lng, z);
+  queueTiles(z, cx, cy, 2);
+}
+requestAnimationFrame(() => { map.invalidateSize(); prefetchQom(); });
+window.addEventListener("load", () => { map.invalidateSize(); });
 
 let myMarker = null;
 function showMyPos(lat, lng) {
@@ -99,7 +169,12 @@ function renderSheet() {
 
 function setSelected(lat, lng, { moveMap = false, resolve = true, zoom } = {}) {
   S.lat = lat; S.lng = lng;
-  if (moveMap) map.setView([lat, lng], zoom ?? Math.max(map.getZoom(), 15));
+  if (moveMap) {
+    const z = zoom ?? Math.max(map.getZoom(), 15);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) map.setView([lat, lng], z, { animate: false });
+    else if (map.distance(map.getCenter(), L.latLng(lat, lng)) < 1000) map.setView([lat, lng], z, { animate: true });
+    else map.flyTo([lat, lng], z, { duration: 1.2 });
+  }
   if (resolve) scheduleResolve(lat, lng);
   else renderSheet();
 }
@@ -112,11 +187,13 @@ function toast(msg) {
 }
 
 // ── MAP EVENTS ───────────────────────────────────────────
-let moveTimer = 0;
+let moveTimer = 0, preTimer = 0;
 map.on("movestart", () => els.wrap.classList.add("map-moving"));
 map.on("move", () => {
   const c = map.getCenter();
   S.lat = c.lat; S.lng = c.lng;
+  clearTimeout(preTimer);
+  preTimer = setTimeout(() => prefetchAround(c.lat, c.lng), 200);
 });
 map.on("moveend", () => {
   els.wrap.classList.remove("map-moving");
@@ -141,7 +218,7 @@ function locate() {
     (p) => {
       els.gps.classList.remove("locating");
       showMyPos(p.coords.latitude, p.coords.longitude);
-      setSelected(p.coords.latitude, p.coords.longitude, { moveMap: true, zoom: 24 });
+      setSelected(p.coords.latitude, p.coords.longitude, { moveMap: true, zoom: 18 });
     },
     (err) => {
       els.gps.classList.remove("locating");
@@ -164,15 +241,75 @@ $("permClose").onclick = hideModal;
 els.modal.addEventListener("click", (e) => { if (e.target === els.modal) hideModal(); });
 
 // ── SEARCH OVERLAY ───────────────────────────────────────
+const LS_RECENT = "mt:recent", LS_FAV = "mt:fav";
+const SUGGEST = [
+  { name: "شهید نجفی، مجموعه ورزشی شهیدان جودی", addr: "شهر قم، شهر قائم، شهید نجفی، مجموعه ورزشی…" },
+];
+function loadJSON(k, fb) {
+  try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : fb; }
+  catch { return fb; }
+}
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+let recent = loadJSON(LS_RECENT, []);
+let fav = new Set(loadJSON(LS_FAV, []));
+function isFav(name) { return fav.has(name); }
+function toggleFav(name) {
+  if (fav.has(name)) fav.delete(name); else fav.add(name);
+  saveJSON(LS_FAV, [...fav]);
+}
+function pushRecent(item) {
+  recent = [item, ...recent.filter((r) => r.name !== item.name)].slice(0, 8);
+  saveJSON(LS_RECENT, recent);
+}
+function histRow({ name, addr, right, favOn }) {
+  const b = document.createElement("button");
+  b.className = "hist-row";
+  b.type = "button";
+  b.innerHTML = `<span class="side-ic right"></span><span class="t"><b></b><small></small></span><span class="side-ic fav"><i data-lucide="star"></i></span>`;
+  b.querySelector("b").textContent = name;
+  b.querySelector("small").textContent = addr;
+  const favEl = b.querySelector(".fav");
+  if (favOn) favEl.classList.add("on");
+  if (right === "clock") b.querySelector(".right").innerHTML = `<i data-lucide="history"></i>`;
+  else b.querySelector(".right").innerHTML = `<i data-lucide="map-pin"></i>`;
+  return { el: b, favEl };
+}
+function renderHome(q) {
+  const needle = enDigits(q || "").trim();
+  const match = (t) => !needle || String(t).includes(needle);
+  els.recentList.innerHTML = "";
+  const rec = recent.filter((r) => match(r.name) || match(r.addr));
+  for (const r of rec) {
+    const { el, favEl } = histRow({ name: r.name, addr: r.addr, right: "clock", favOn: isFav(r.name) });
+    favEl.onclick = (e) => { e.stopPropagation(); toggleFav(r.name); favEl.classList.toggle("on"); };
+    el.onclick = () => {
+      closeSearch();
+      setSelected(r.lat, r.lng, { moveMap: true });
+    };
+    els.recentList.appendChild(el);
+  }
+  els.suggestList.innerHTML = "";
+  const sug = SUGGEST.filter((s) => match(s.name) || match(s.addr));
+  for (const s of sug) {
+    const { el, favEl } = histRow({ name: s.name, addr: s.addr, right: "pin", favOn: isFav(s.name) });
+    favEl.onclick = (e) => { e.stopPropagation(); toggleFav(s.name); favEl.classList.toggle("on"); };
+    el.onclick = () => { clearTimeout(searchTimer); search(s.name); };
+    els.suggestList.appendChild(el);
+  }
+  refreshIcons();
+}
 let searchPushed = false;
 function openSearch() {
   if (!els.overlay.hidden) return;
   els.overlay.hidden = false;
   els.results.innerHTML = "";
   els.searchInput.value = "";
+  renderHome("");
+  els.home.hidden = false;
   history.pushState({ search: true }, "");
   searchPushed = true;
   setTimeout(() => els.searchInput.focus(), 50);
+  refreshIcons();
 }
 function doCloseSearch() {
   els.overlay.hidden = true;
@@ -203,6 +340,7 @@ document.addEventListener("keydown", (e) => {
 // ── SEARCH ───────────────────────────────────────────────
 let searchTimer = 0;
 async function search(q) {
+  els.home.hidden = true;
   els.results.innerHTML = `<div class="err">در حال جستجو...</div>`;
   try {
     const list = await searchLocation(q);
@@ -219,6 +357,7 @@ async function search(q) {
       b.querySelector("b").textContent = faStr(name);
       b.querySelector("small").textContent = faStr(it.display_name);
       b.onclick = () => {
+        pushRecent({ name: faStr(name), addr: faStr(it.display_name), lat: parseFloat(it.lat), lng: parseFloat(it.lon) });
         closeSearch();
         setSelected(parseFloat(it.lat), parseFloat(it.lon), { moveMap: true });
       };
@@ -236,12 +375,18 @@ function submitSearch() {
 els.searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
   const q = els.searchInput.value.trim();
-  if (q.length < 3) { els.results.innerHTML = ""; return; }
+  if (q.length < 1) { els.results.innerHTML = ""; els.home.hidden = false; return; }
+  if (q.length < 3) { renderHome(q); els.home.hidden = false; els.results.innerHTML = ""; return; }
   searchTimer = setTimeout(() => search(q), 600);
 });
 els.searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") { clearTimeout(searchTimer); submitSearch(); }
 });
+document.querySelectorAll(".fav-chip").forEach((c) => {
+  c.onclick = () => { els.searchInput.value = c.dataset.q; renderHome(c.dataset.q); els.home.hidden = false; els.results.innerHTML = ""; };
+});
+if (els.mic) els.mic.onclick = () => toast("جست‌وجوی صوتی به‌زودی");
+if (els.city) els.city.onclick = () => toast("انتخاب شهر به‌زودی");
 
 // ── SHEET ACTIONS ────────────────────────────────────────
 els.confirm.onclick = async () => {
