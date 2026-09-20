@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+pnpm format
 pnpm typecheck
 pnpm lint
 pnpm format:check

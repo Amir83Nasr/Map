@@ -43,6 +43,8 @@ export function createMap(el: HTMLElement, wrap: HTMLElement): MapView {
   window.addEventListener('load', () => map.resize());
 
   let myMarker: Marker | null = null;
+  // Target of last programmatic snap — its own moveend must not re-settle.
+  let snapTarget: { lat: number; lng: number } | null = null;
 
   return {
     map,
@@ -65,7 +67,13 @@ export function createMap(el: HTMLElement, wrap: HTMLElement): MapView {
       }
     },
     snapTo(lat: number, lng: number): void {
-      map.jumpTo({ center: [lng, lat] });
+      snapTarget = { lat, lng };
+      const center = [lng, lat] as [number, number];
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        map.jumpTo({ center });
+      } else {
+        map.easeTo({ center, duration: 400 });
+      }
     },
     onMove(onMove, onSettled): void {
       let moveTimer = 0;
@@ -78,6 +86,15 @@ export function createMap(el: HTMLElement, wrap: HTMLElement): MapView {
         wrap.classList.remove('map-moving');
         const c = map.getCenter();
         clearTimeout(moveTimer);
+        // Snap's own arrival — skip re-settle, avoids ping-pong loop.
+        if (
+          snapTarget &&
+          Math.abs(c.lat - snapTarget.lat) < 1e-7 &&
+          Math.abs(c.lng - snapTarget.lng) < 1e-7
+        ) {
+          snapTarget = null;
+          return;
+        }
         moveTimer = window.setTimeout(() => onSettled(c.lat, c.lng), SETTLE_DELAY);
       });
     },

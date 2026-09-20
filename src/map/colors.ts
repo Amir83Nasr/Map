@@ -13,7 +13,7 @@ export const SAND_FILL = '#e9dfc0';
 export const WATER_FILL = '#b9d9f2';
 export const WATER_FILL_FAINT = '#cfe4f7';
 export const WATER_LINE = '#a9cdf0';
-export const WATER_LABEL = '#7a94b5';
+export const WATER_LABEL = '#4e6e94';
 
 export const BUILDING_FILL = '#dfe3e9';
 export const BUILDING_TOP = '#e9ebee';
@@ -30,8 +30,8 @@ export const AEROWAY_CASING = '#c6ccd4';
 export const RAIL_COLOR = '#b9bdc4';
 export const BOUNDARY = '#a7aab3';
 
-export const LABEL_ROAD = '#8a8f96';
-export const LABEL_PLACE = '#52565c';
-export const LABEL_HALO = '#f1f3f5';
+export const LABEL_ROAD = '#5b6067';
+export const LABEL_PLACE = '#2f3338';
+export const LABEL_HALO = '#f7f8f9';
 
-export const POI_COLOR = '#7a7f87';
+export const POI_COLOR = '#565b62';

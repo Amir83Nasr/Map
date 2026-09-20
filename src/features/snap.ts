@@ -65,7 +65,8 @@ export function trySnapToRoad(
   let bestD2 = SNAP_RADIUS_PX * SNAP_RADIUS_PX;
   for (const f of feats) {
     const g = f.geometry;
-    const lines = g.type === 'LineString' ? [g.coordinates] : g.type === 'MultiLineString' ? g.coordinates : [];
+    const lines =
+      g.type === 'LineString' ? [g.coordinates] : g.type === 'MultiLineString' ? g.coordinates : [];
     for (const line of lines) {
       let prev: { x: number; y: number } | null = null;
       for (const coord of line) {

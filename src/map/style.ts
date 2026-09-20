@@ -700,9 +700,9 @@ const layers = [
       'symbol-spacing': 350,
       'text-field': FA_LINE,
       'text-font': REGULAR,
-      'text-size': 12,
+      'text-size': 13,
     },
-    paint: { 'text-color': WATER_LABEL, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': WATER_LABEL, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'water_name_label',
@@ -710,7 +710,7 @@ const layers = [
     source: 'openmaptiles',
     'source-layer': 'water_name',
     layout: { 'text-field': FA, 'text-font': REGULAR, 'text-max-width': 8, 'text-size': 12 },
-    paint: { 'text-color': WATER_LABEL, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': WATER_LABEL, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
 
   // ── POI (Snapp density: worship/education/medical/shops) ──
@@ -751,9 +751,9 @@ const layers = [
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 1],
-      'text-size': 11,
+      'text-size': 12,
     },
-    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'poi_shops',
@@ -794,9 +794,9 @@ const layers = [
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 1],
-      'text-size': 11,
+      'text-size': 12,
     },
-    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'poi_r1',
@@ -824,9 +824,9 @@ const layers = [
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 0.8],
-      'text-size': 11,
+      'text-size': 12,
     },
-    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'airport',
@@ -843,9 +843,9 @@ const layers = [
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 0.8],
-      'text-size': 11,
+      'text-size': 12,
     },
-    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': POI_COLOR, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
 
   // ── ROAD NAMES ──────────────────────────────────────────
@@ -867,7 +867,7 @@ const layers = [
       'text-rotation-alignment': 'map',
       'text-size': ['interpolate', ['linear'], ['zoom'], 14, 11, 17, 12],
     },
-    paint: { 'text-color': LABEL_ROAD, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_ROAD, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'highway-name-major',
@@ -889,7 +889,7 @@ const layers = [
       'text-rotation-alignment': 'map',
       'text-size': ['interpolate', ['linear'], ['zoom'], 11, 11, 15, 13],
     },
-    paint: { 'text-color': LABEL_ROAD, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_ROAD, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
 
   // ── PLACE LABELS ────────────────────────────────────────
@@ -906,7 +906,7 @@ const layers = [
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 9, 11, 12, 13],
     },
-    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'label_town',
@@ -921,7 +921,7 @@ const layers = [
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 7, 12, 11, 14],
     },
-    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'label_other',
@@ -942,7 +942,7 @@ const layers = [
       'text-max-width': 8,
       'text-size': ['interpolate', ['linear'], ['zoom'], 8, 10, 12, 12],
     },
-    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'label_city',
@@ -957,7 +957,7 @@ const layers = [
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 4, 11, 7, 13, 11, 16],
     },
-    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
   {
     id: 'label_city_capital',
@@ -972,7 +972,7 @@ const layers = [
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 4, 12, 7, 14, 11, 18],
     },
-    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1 },
+    paint: { 'text-color': LABEL_PLACE, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
 ];
 
