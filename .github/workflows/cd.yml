@@ -28,10 +28,11 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check
+      - run: pnpm test
       - run: pnpm build
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: demo/dist
 
   deploy:
     needs: build

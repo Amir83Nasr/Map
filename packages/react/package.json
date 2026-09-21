@@ -1,0 +1,40 @@
+{
+  "name": "qompick-react",
+  "version": "1.0.0",
+  "description": "React adapter for qompick-core location picker",
+  "type": "module",
+  "main": "./dist/qompick-react.cjs",
+  "module": "./dist/qompick-react.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/qompick-react.js",
+      "require": "./dist/qompick-react.cjs"
+    }
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19",
+    "maplibre-gl": "^6.10.0"
+  },
+  "dependencies": {
+    "qompick-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "maplibre-gl": "^6.10.0",
+    "qompick-core": "workspace:*",
+    "react": "^18.3.0",
+    "typescript": "~5.7.0",
+    "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.5.0"
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  }
+}

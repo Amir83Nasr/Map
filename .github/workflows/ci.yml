@@ -19,6 +19,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check
+      - run: pnpm test
 
   build:
     runs-on: ubuntu-24.04

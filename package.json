@@ -1,33 +1,23 @@
 {
-  "name": "map",
+  "name": "qompick",
   "private": true,
   "version": "1.0.0",
-  "description": "Vanilla TypeScript map location picker (Qom)",
   "packageManager": "pnpm@12.5.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "dev": "pnpm --filter qompick-demo dev",
+    "build": "pnpm --filter qompick-core build && pnpm --filter qompick-react build && pnpm --filter qompick-demo build",
+    "typecheck": "pnpm --filter qompick-core typecheck && pnpm --filter qompick-react typecheck && pnpm --filter qompick-demo exec tsc --noEmit",
+    "lint": "eslint packages demo",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "pnpm --filter qompick-core test",
     "prepare": "git config core.hooksPath .githooks"
   },
-  "dependencies": {
-    "lucide": "^0.469.0",
-    "maplibre-gl": "^6.10.0"
-  },
   "devDependencies": {
-    "@maplibre/maplibre-gl-style-spec": "^26.4.4",
-    "@tailwindcss/vite": "^4.1.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.4.2",
-    "tailwindcss": "^4.1.0",
-    "typescript": "~5.7.0",
-    "typescript-eslint": "^8.20.0",
-    "vite": "^6.0.0"
+    "typescript-eslint": "^8.20.0"
   }
 }

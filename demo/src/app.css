@@ -1,0 +1,44 @@
+body {
+  margin: 0;
+  font-family: Tahoma, system-ui, sans-serif;
+  background: #f5f5f5;
+}
+.demo {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: grid;
+  gap: 24px;
+}
+.panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+}
+.pick-host,
+.qp-app {
+  height: 420px;
+  position: relative;
+}
+.log {
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 12px;
+  max-height: 140px;
+  overflow: auto;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('../fonts/IRANYekanX-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+.demo {
+  font-family: 'IRANYekanX', Tahoma, system-ui, sans-serif;
+}
