@@ -184,19 +184,58 @@
 }
 /* ── VENUE PIN ─────────────────────────────────────────────── */
 .venue-pin {
-  width: 36px;
-  height: 36px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 1.5px solid #fff;
   background: #16a34a;
   color: #fff;
   cursor: pointer;
   display: grid;
   place-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   padding: 0;
 }
 .venue-pin .lucide {
-  width: 18px;
-  height: 18px;
+  width: 13px;
+  height: 13px;
+}
+/* ── VENUE POPUP ───────────────────────────────────────────── */
+.venue-pop-wrap {
+  z-index: 500;
+}
+.venue-pop-wrap .maplibregl-popup-content {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 999px;
+}
+.venue-pop-wrap.maplibregl-popup-anchor-top {
+  transform: translate(-50%, 8px);
+}
+.venue-pop-wrap .maplibregl-popup-tip {
+  display: none;
+}
+.venue-pop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 2px 12px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+  /* box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); */
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.venue-pop-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #16a34a;
 }
