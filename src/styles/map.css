@@ -182,3 +182,21 @@
     transform: rotate(360deg);
   }
 }
+/* ── VENUE PIN ─────────────────────────────────────────────── */
+.venue-pin {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #16a34a;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 0;
+}
+.venue-pin .lucide {
+  width: 18px;
+  height: 18px;
+}

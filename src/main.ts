@@ -13,6 +13,7 @@ import { trySnapToRoad } from './features/snap.js';
 import { initLocate } from './features/locate.js';
 import { initOverlay } from './features/overlay.js';
 import { initSearchHost } from './features/search.js';
+import { initVenues } from './features/venues.js';
 import { initConfirm } from './features/confirm.js';
 import { createToast } from './components/toast.js';
 import { wireClear } from './components/clear-input.js';
@@ -23,6 +24,9 @@ import { getById } from './utils/dom.js';
 const wrap = document.querySelector<HTMLElement>('.map-wrap');
 const mapEl = getById<HTMLElement>('map');
 if (!wrap) throw new Error('Missing element .map-wrap');
+
+// Show shell only after CSS loaded — avoids raw-HTML flash on first paint.
+requestAnimationFrame(() => document.querySelector('.app')?.classList.add('ready'));
 
 const map = createMap(mapEl, wrap);
 const label = getById<HTMLElement>('searchLabel');
@@ -78,6 +82,9 @@ const desk = initSearchHost(
   selection,
   16,
 );
+
+// ── SPORT VENUE PINS ────────────────────────────────────────
+initVenues(map, selection);
 
 // ── CONFIRM ─────────────────────────────────────────────────
 initConfirm(selection, toast);

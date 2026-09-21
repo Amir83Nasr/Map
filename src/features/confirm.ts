@@ -11,7 +11,7 @@ export function initConfirm(selection: Selection, toast: (msg: string) => void):
 
   function openConfirm(): void {
     address.value = state.address ? faStr(state.address) : '';
-    coords.textContent = `${Number(state.lat).toFixed(6)}, ${Number(state.lng).toFixed(6)}`;
+    coords.textContent = `${faCoord(state.lat, 6)}, ${faCoord(state.lng, 6)}`;
     modal.classList.remove('hidden');
   }
   function closeConfirm(): void {

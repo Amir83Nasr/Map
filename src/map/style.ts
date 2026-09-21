@@ -46,13 +46,68 @@ const FA = [
   ['get', 'name'],
   ['get', 'name:latin'],
 ];
-const FA_LINE = [
-  'coalesce',
-  ['get', 'name:fa'],
-  ['get', 'name:nonlatin'],
-  ['get', 'name'],
-  ['get', 'name:latin'],
+
+// Rewrite Latin/Arabic digits to Persian inside tile labels ("مدنی 5" → "مدنی ۵").
+// Style-spec has no replace/regexp op, so map chars via split/at/match/concat.
+// ponytail: rewrites first MAX chars; raise MAX if longer digit-bearing labels appear.
+const FA_DIGIT_MAP: unknown[] = [
+  '0',
+  '۰',
+  '1',
+  '۱',
+  '2',
+  '۲',
+  '3',
+  '۳',
+  '4',
+  '۴',
+  '5',
+  '۵',
+  '6',
+  '۶',
+  '7',
+  '۷',
+  '8',
+  '۸',
+  '9',
+  '۹',
+  '٠',
+  '۰',
+  '١',
+  '۱',
+  '٢',
+  '۲',
+  '٣',
+  '۳',
+  '٤',
+  '۴',
+  '٥',
+  '۵',
+  '٦',
+  '۶',
+  '٧',
+  '۷',
+  '٨',
+  '۸',
+  '٩',
+  '۹',
 ];
+
+function faDigits(inner: unknown, max = 40): unknown {
+  const base: unknown = ['coalesce', inner, ''];
+  const chars: unknown = ['split', ['to-string', base], ''];
+  const n: unknown = ['length', chars];
+  const parts: unknown[] = [];
+  for (let i = 0; i < max; i++) {
+    const ch: unknown = ['at', i, chars];
+    parts.push(['case', ['>', n, i], ['match', ch, ...FA_DIGIT_MAP, ch], '']);
+  }
+  // Tail beyond max passes through unmapped (long labels are not truncated).
+  parts.push(['slice', ['to-string', base], max]);
+  return ['format', ['concat', ...parts], {}];
+}
+
+const FA_LINE = faDigits(FA);
 
 const REGULAR = ['IRANYekanX Regular'];
 // ponytail: single Regular weight only; add real Bold PBFs + stack when Bold file lands.
@@ -709,7 +764,7 @@ const layers = [
     type: 'symbol',
     source: 'openmaptiles',
     'source-layer': 'water_name',
-    layout: { 'text-field': FA, 'text-font': REGULAR, 'text-max-width': 8, 'text-size': 12 },
+    layout: { 'text-field': FA_LINE, 'text-font': REGULAR, 'text-max-width': 8, 'text-size': 12 },
     paint: { 'text-color': WATER_LABEL, 'text-halo-color': LABEL_HALO, 'text-halo-width': 1.5 },
   },
 
@@ -747,7 +802,7 @@ const layers = [
       ],
       'icon-size': 1.1,
       'text-anchor': 'top',
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 1],
@@ -790,7 +845,7 @@ const layers = [
       ],
       'icon-size': 1,
       'text-anchor': 'top',
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 1],
@@ -820,7 +875,7 @@ const layers = [
       ],
       'icon-size': 0.8,
       'text-anchor': 'top',
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 0.8],
@@ -839,7 +894,7 @@ const layers = [
       'icon-image': 'airport_11',
       'icon-size': 1,
       'text-anchor': 'top',
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-offset': [0, 0.8],
@@ -901,7 +956,7 @@ const layers = [
     minzoom: 9,
     filter: ['==', ['get', 'class'], 'village'],
     layout: {
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 9, 11, 12, 13],
@@ -916,7 +971,7 @@ const layers = [
     minzoom: 6,
     filter: ['==', ['get', 'class'], 'town'],
     layout: {
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': BOLD,
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 7, 12, 11, 14],
@@ -937,7 +992,7 @@ const layers = [
       true,
     ],
     layout: {
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': REGULAR,
       'text-max-width': 8,
       'text-size': ['interpolate', ['linear'], ['zoom'], 8, 10, 12, 12],
@@ -952,7 +1007,7 @@ const layers = [
     minzoom: 3,
     filter: ['all', ['==', ['get', 'class'], 'city'], ['!=', ['get', 'capital'], 2]],
     layout: {
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': BOLD,
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 4, 11, 7, 13, 11, 16],
@@ -967,7 +1022,7 @@ const layers = [
     minzoom: 3,
     filter: ['all', ['==', ['get', 'class'], 'city'], ['==', ['get', 'capital'], 2]],
     layout: {
-      'text-field': FA,
+      'text-field': FA_LINE,
       'text-font': BOLD,
       'text-max-width': 8,
       'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 4, 12, 7, 14, 11, 18],

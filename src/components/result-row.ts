@@ -9,13 +9,15 @@ export function createSuggestRow(name: string, addr: string): HTMLButtonElement 
   b.type = 'button';
   b.innerHTML =
     '<span class="side-ic right"><i data-lucide="map-pin"></i></span><span class="t"><b></b><small></small></span>';
-  query(b, 'b').textContent = String(name).replace(/،\s*قم\s*$/, '');
-  query(b, 'small').textContent = String(addr)
-    .split(/[،,]/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .reverse()
-    .join('، ');
+  query(b, 'b').textContent = faStr(String(name).replace(/،\s*قم\s*$/, ''));
+  query(b, 'small').textContent = faStr(
+    String(addr)
+      .split(/[،,]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .reverse()
+      .join('، '),
+  );
   refreshIcons();
   return b;
 }

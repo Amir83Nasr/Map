@@ -18,7 +18,7 @@ interface SearchController {
 
 function filterSuggest(q: string): typeof SUGGEST {
   const needle = enDigits(q).trim();
-  const match = (t: string): boolean => !needle || String(t).includes(needle);
+  const match = (t: string): boolean => !needle || enDigits(String(t)).includes(needle);
   return SUGGEST.filter((s) => match(s.name) || match(s.addr));
 }
 

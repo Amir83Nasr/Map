@@ -1,7 +1,9 @@
 const FA_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
 
 export function faStr(value: string | number): string {
-  return String(value).replace(/\d/g, (c) => FA_DIGITS[Number(c)]);
+  return String(value)
+    .replace(/\d/g, (c) => FA_DIGITS[Number(c)])
+    .replace(/[٠-٩]/g, (c) => FA_DIGITS['٠١٢٣٤٥٦٧٨٩'.indexOf(c)]);
 }
 
 export function faCoord(n: number, digits = 5): string {
