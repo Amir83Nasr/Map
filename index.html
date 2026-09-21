@@ -7,11 +7,23 @@
     <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
     <style>
       /* ── CRITICAL / FIRST PAINT ─────────────────────────── */
-      html, body { height: 100%; }
-      body { margin: 0; background: #f5f5f5; }
-      [hidden] { display: none !important; }
-      .app { visibility: hidden; }
-      .app.ready { visibility: visible; }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: #f5f5f5;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .app {
+        visibility: hidden;
+      }
+      .app.ready {
+        visibility: visible;
+      }
     </style>
   </head>
   <body>
@@ -179,9 +191,17 @@
     </div>
     <script>
       // Fallback: never leave a blank page if the module fails to load.
-      setTimeout(function () { document.querySelector('.app')?.classList.add('ready'); }, 3000);
+      setTimeout(function () {
+        document.querySelector('.app')?.classList.add('ready');
+      }, 3000);
     </script>
-    <noscript><style>.app { visibility: visible; }</style></noscript>
+    <noscript
+      ><style>
+        .app {
+          visibility: visible;
+        }
+      </style></noscript
+    >
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
