@@ -26,6 +26,10 @@ export const FA_LABELS: Labels = {
   geoBlocked:
     'مرورگر قبلاً دسترسی را بسته است. از تنظیمات سایت مرورگر، دسترسی Location را مجاز کنید.',
   enableAccess: 'فعال کردن دسترسی',
+  developers: 'توسعه‌دهندگان',
+  backToMap: 'بازگشت به نقشه',
+  copy: 'کپی',
+  copied: 'کپی شد',
 };
 
 export const EN_LABELS: Labels = { ...FA_LABELS };

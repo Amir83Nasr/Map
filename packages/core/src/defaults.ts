@@ -32,7 +32,13 @@ export function mergeOptions(
       ],
       ...(o.map ?? {}),
     },
-    controls: { gps: true, confirmButton: true, searchTrigger: true, ...(o.controls ?? {}) },
+    controls: {
+      gps: true,
+      confirmButton: true,
+      searchTrigger: true,
+      developers: false,
+      ...(o.controls ?? {}),
+    },
     search: { enabled: true, minLength: 3, debounceMs: 350, limit: 5, ...(o.search ?? {}) },
     sheet: { enabled: true, desktopSidebar: true, ...(o.sheet ?? {}) },
     behavior: {
@@ -41,7 +47,7 @@ export function mergeOptions(
       resolveDelayMs: 400,
       settleDelayMs: 250,
       snapDelayMs: 900,
-      pickZoom: 14,
+      pickZoom: 11,
       locateZoom: 18,
       ...(o.behavior ?? {}),
     },

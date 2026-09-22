@@ -12,6 +12,7 @@ function Site(): React.JSX.Element {
     if (!host.current) return;
     const p = new LocationPicker({
       container: host.current,
+      controls: { developers: true },
       search: { suggestions: QOM_SUGGEST },
       markers: QOM_VENUES,
     });

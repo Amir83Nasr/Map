@@ -458,6 +458,96 @@
   font-size: 13px;
   color: var(--qp-muted);
 }
+/* ── DEVELOPER DOCS ──────────────────────────────────── */
+.qp-dev {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 450;
+  border: 1px solid var(--qp-line);
+  background: #fff;
+  box-shadow: var(--qp-shadow);
+  border-radius: 999px;
+  padding: 0 14px;
+  min-height: 36px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.qp-docs {
+  position: absolute;
+  inset: 0;
+  z-index: 950;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+}
+.qp-docs[hidden] {
+  display: none;
+}
+.qp-docs-card {
+  position: relative;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 18px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: var(--qp-shadow);
+}
+.qp-docs-card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.qp-docs-card h3 {
+  margin: 16px 0 6px;
+  font-size: 14px;
+}
+.qp-docs-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.qp-docs-card pre {
+  background: #f4f5f7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  overflow-x: auto;
+  margin: 8px 0;
+  direction: ltr;
+  text-align: left;
+}
+.qp-prompt {
+  background: #f4f5f7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.9;
+  margin-bottom: 8px;
+}
+.qp-docs-card .qp-modal-row {
+  margin-top: 12px;
+}
+.qp-note {
+  font-size: 13px;
+  color: var(--qp-muted);
+}
+.qp-list {
+  margin: 8px 0;
+  padding-inline-start: 20px;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.qp-list code {
+  background: #f4f5f7;
+  border-radius: 6px;
+  padding: 0 6px;
+  font-size: 12px;
+}
 /* ── MODAL / TOAST ── */
 .qp-modal {
   position: absolute;
@@ -473,12 +563,34 @@
   display: none;
 }
 .qp-modal-card {
+  position: relative;
   background: #fff;
   border-radius: 20px;
   padding: 20px 18px;
   max-width: 480px;
   width: 100%;
   box-shadow: var(--qp-shadow);
+}
+.qp-x {
+  position: absolute;
+  top: 12px;
+  inset-inline-end: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--qp-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.qp-x svg {
+  width: 18px;
+  height: 18px;
+}
+.qp-x:hover {
+  background: #f4f5f7;
 }
 .qp-modal-row {
   display: flex;

@@ -37,6 +37,7 @@ export interface ControlsOption {
   zoom?: boolean;
   confirmButton?: boolean;
   searchTrigger?: boolean;
+  developers?: boolean;
 }
 export interface SearchOption {
   enabled?: boolean;
@@ -87,6 +88,10 @@ export interface Labels {
   geoText: string;
   geoBlocked: string;
   enableAccess: string;
+  developers: string;
+  backToMap: string;
+  copy: string;
+  copied: string;
 }
 
 export interface PickerCallbacks {

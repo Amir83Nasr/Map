@@ -7,7 +7,7 @@ import type {
   SearchSuggestion,
 } from './types.js';
 import { DEFAULT_CENTER, mergeOptions, resolveDir } from './defaults.js';
-import { MAP_STYLE, MAP_STYLE_RASTER } from './map-style.js';
+import { MAP_STYLE } from './map-style.js';
 import { Emitter } from './emitter.js';
 import { ICONS } from './icons.js';
 import { enDigits, faCoord, faStr, isValidLatLng, shortAddr } from './format.js';
@@ -15,6 +15,36 @@ import { reverseGeocode, searchLocation } from './geocode.js';
 import { trySnapToRoad } from './snap.js';
 
 const MIN_QUERY_LEN_FALLBACK = 3;
+
+const DEV_PROMPT_ZERO =
+  'من می‌خواهم با پکیج قم‌پیک (qompick) یک نقشه انتخاب موقعیت (LocationPicker) از صفر در پروژه‌ام بسازم. ' +
+  'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده؛ در دو نسخه vanilla با qompick-core و React با qompick-react عرضه می‌شود. ' +
+  'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
+  '۱) نصب — دستور نصب qompick-core و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود) و در صورت React نصب qompick-react؛ ' +
+  '۲) راه‌اندازی پایه — ایمپورت maplibre-gl/dist/maplibre-gl.css و qompick-core/styles.css، ساخت کانتینر با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود)، ساخت LocationPicker با container و center و zoom اولیه؛ ' +
+  '۳) جستجو — فعال‌سازی search و دادن suggestions اولیه با فیلدهای name و addr و lat و lng؛ ' +
+  '۴) مارکرها — نمایش مارکر مکان‌ها با markers؛ ' +
+  '۵) دریافت نتیجه — گرفتن مختصات و آدرس تاییدشده کاربر با onConfirm یا رویداد confirm؛ ' +
+  '۶) پاک‌سازی در React — صدا زدن destroy در cleanup تابع useEffect (کامپوننت LocationPickerView خودش این کار را می‌کند). ' +
+  'کد کامل و قابل اجرا بده شامل همه importها و cssها، بگو هر بخش چه می‌کند، و در پایان خروجی مورد انتظار را توصیف کن: نقشه فارسی راست‌چین (RTL) و موبایل‌فرست با پین وسط، دکمه GPS، جستجو و دکمه تایید موقعیت. ' +
+  'اگر چیزی از پروژه من لازم داری (vanilla یا React بودن، نسخه پکیج‌ها) اول بپرس.';
+
+const DEV_PROMPT_EXISTING =
+  'پروژه من از قبل وجود دارد و می‌خواهم نقشه انتخاب موقعیت قم‌پیک (qompick) را به آن اضافه کنم بدون این‌که چیز دیگری خراب شود. ' +
+  'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده؛ در دو نسخه vanilla با qompick-core و React با qompick-react عرضه می‌شود. ' +
+  'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
+  '۱) نصب — دستور نصب qompick-core و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود) و در صورت React نصب qompick-react، با توجه به این‌که بقیه dependencyهای پروژه نباید به‌هم بخورد؛ ' +
+  '۲) ایمپورت cssها — اضافه کردن maplibre-gl/dist/maplibre-gl.css و qompick-core/styles.css طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
+  '۳) کانتینر — ساخت کانتینر با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) در جای مناسب صفحه فعلی؛ ' +
+  '۴) اتصال — ساخت LocationPicker با container و center و zoom، اضافه کردن search با suggestions، نمایش markers، و گرفتن مختصات و آدرس تاییدشده با onConfirm یا رویداد confirm؛ ' +
+  '۵) پاک‌سازی — در React صدا زدن destroy در cleanup تابع useEffect (کامپوننت LocationPickerView خودش این کار را می‌کند) و در vanilla صدا زدن دستی picker.destroy موقع حذف کانتینر. ' +
+  'کد کامل و قابل اجرا بده شامل همه importها، بگو هر بخش چه می‌کند، و در پایان خروجی مورد انتظار را توصیف کن: نقشه فارسی راست‌چین (RTL) و موبایل‌فرست با پین وسط، دکمه GPS، جستجو و دکمه تایید موقعیت. ' +
+  'اگر چیزی از پروژه من لازم داری (vanilla یا React بودن، فریم‌ورک، نسخه پکیج‌ها، ساختار فایل‌ها) اول بپرس.';
+
+const DEV_PROMPTS: Record<string, string> = {
+  zero: DEV_PROMPT_ZERO,
+  existing: DEV_PROMPT_EXISTING,
+};
 
 function el(html: string): HTMLElement {
   const t = document.createElement('template');
@@ -43,6 +73,16 @@ export class LocationPicker {
   lng = DEFAULT_CENTER.lng;
   address = '';
   resolving = false;
+  private onKey = (e: KeyboardEvent): void => {
+    if (e.key !== 'Escape') return;
+    if (!this.overlay.hidden) this.closeSearch();
+    else if (!this.isHidden('.qp-docs')) this.closeDocs();
+    else this.closeModal('qp-confirm');
+    this.closeModal('qp-geo');
+  };
+  private isHidden(sel: string): boolean {
+    return (this.root.querySelector(sel) as HTMLElement | null)?.hidden ?? true;
+  }
 
   constructor(options: LocationPickerOptions) {
     this.raw = options;
@@ -100,7 +140,7 @@ export class LocationPicker {
     const loc = this.getLocation();
     this.emitter.emit('locationChange', loc);
     if (opts.moveMap && this.map) {
-      const zoom = opts.zoom ?? Math.max(this.map.getZoom(), this.opts.behavior.pickZoom ?? 14);
+      const zoom = opts.zoom ?? Math.max(this.map.getZoom(), this.opts.behavior.pickZoom ?? 11);
       this.map.flyTo({ center: [lng, lat], zoom, duration: 450 });
     }
     if (opts.resolve !== false && this.opts.behavior.resolveOnMove !== false)
@@ -153,6 +193,7 @@ export class LocationPicker {
 
   destroy(): void {
     this.destroyed = true;
+    document.removeEventListener('keydown', this.onKey);
     this.privateTimers.forEach((t) => window.clearTimeout(t));
     this.revAbort?.abort();
     this.searchAbort?.abort();
@@ -175,7 +216,8 @@ export class LocationPicker {
     this.root.innerHTML = `
       <div class="qp-layout">
         <main class="qp-map-wrap">${'<div class="qp-map"></div>'}${pinHtml}
-          ${o.controls.gps ? `<button class="qp-gps" aria-label="${this.t('currentLocation')}">${ICONS.locate}</button>` : ''}
+          ${o.controls.gps ? `<button class="qp-gps" type="button" aria-label="${this.t('currentLocation')}">${ICONS.locate}</button>` : ''}
+          ${o.controls.developers ? `<button class="qp-dev" type="button">${this.t('developers')}</button>` : ''}
         </main>
         ${
           o.sheet.enabled
@@ -198,8 +240,9 @@ export class LocationPicker {
       </div>`
           : ''
       }
-      <div class="qp-modal qp-geo" hidden><div class="qp-modal-card"><h2>${this.t('geoTitle')}</h2><p>${this.t('geoText')}</p><p class="qp-modal-sub">${this.t('geoBlocked')}</p><div class="qp-modal-row"><button class="qp-cta qp-geo-retry">${this.t('enableAccess')}</button></div></div></div>
-      <div class="qp-modal qp-confirm" hidden><div class="qp-modal-card"><h2>${this.t('confirmLocation')}</h2><label>${this.t('chosenAddress')}</label><textarea class="qp-addr" rows="3"></textarea><div>${this.t('coordsToServer')}</div><div class="qp-coords" dir="ltr"></div><div class="qp-modal-row"><button class="qp-cta qp-final">${this.t('confirm')}</button><button class="qp-ghost qp-edit">${this.t('editOnMap')}</button></div></div></div>
+      <div class="qp-modal qp-geo" hidden><div class="qp-modal-card"><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button><h2>${this.t('geoTitle')}</h2><p>${this.t('geoText')}</p><p class="qp-modal-sub">${this.t('geoBlocked')}</p><div class="qp-modal-row"><button class="qp-cta qp-geo-retry">${this.t('enableAccess')}</button></div></div></div>
+      <div class="qp-modal qp-confirm" hidden><div class="qp-modal-card"><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button><h2>${this.t('confirmLocation')}</h2><label>${this.t('chosenAddress')}</label><textarea class="qp-addr" rows="3"></textarea><div>${this.t('coordsToServer')}</div><div class="qp-coords" dir="ltr"></div><div class="qp-modal-row"><button class="qp-cta qp-final">${this.t('confirm')}</button><button class="qp-ghost qp-edit">${this.t('editOnMap')}</button></div></div></div>
+      ${o.controls.developers ? this.devDocsHtml() : ''}
       <div class="qp-toast" role="status"></div>`;
     host.appendChild(this.root);
     this.labelEl = this.root.querySelector('.qp-search-label') ?? el('<span></span>');
@@ -229,9 +272,25 @@ export class LocationPicker {
         if (e.target === mm) (mm as HTMLElement).hidden = true;
       }),
     );
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !this.overlay.hidden) this.closeSearch();
+    this.root.querySelectorAll('.qp-modal .qp-x').forEach((b) =>
+      b.addEventListener('click', () => {
+        (b.closest('.qp-modal') as HTMLElement | null)?.setAttribute('hidden', '');
+      }),
+    );
+    this.root
+      .querySelector('.qp-docs .qp-x')
+      ?.addEventListener('click', () => this.closeDocs());
+    document.addEventListener('keydown', this.onKey);
+    this.root.querySelector('.qp-dev')?.addEventListener('click', () => this.openDocs());
+    this.root.querySelector('.qp-back')?.addEventListener('click', () => this.closeDocs());
+    this.root.querySelector('.qp-docs')?.addEventListener('click', (e) => {
+      if (e.target === this.root.querySelector('.qp-docs')) this.closeDocs();
     });
+    this.root.querySelectorAll('.qp-copy').forEach((b) =>
+      b.addEventListener('click', (e) => {
+        this.copyPrompt(e.currentTarget as HTMLButtonElement);
+      }),
+    );
     const input = this.root.querySelector<HTMLInputElement>('.qp-overlay .qp-field input');
     if (input) {
       const clear = this.root.querySelector<HTMLButtonElement>('.qp-overlay .qp-clear');
@@ -281,14 +340,26 @@ export class LocationPicker {
   private initMap(): void {
     const o = this.opts;
     const mapEl = this.root.querySelector('.qp-map') as HTMLElement;
-    // Vector first (exact old look: FA labels, IRANYekanX glyphs, road snap).
-    // If its tiles/sprites are unreachable, fall back to OSM raster so the
-    // map never renders gray. Guarded: runs once, only for the default style.
+    // Vector only (FA labels, IRANYekanX glyphs, road snap).
     const base =
       typeof o.map.style === 'object' && o.map.style !== null
         ? { ...(o.map.style as Record<string, unknown>) }
         : ({ ...MAP_STYLE } as Record<string, unknown>);
     const style = o.map.glyphs ? { ...base, glyphs: o.map.glyphs } : base;
+    // Relative glyphs template must resolve against page base, not domain
+    // root: core prebuilds with BASE_URL='/', breaks under Pages '/<repo>/'.
+    // new URL() would percent-encode {fontstack}/{range}, so join manually.
+    if (typeof style.glyphs === 'string' && !/^(https?:|data:|blob:|\/)/.test(style.glyphs)) {
+      try {
+        const u = new URL(document.baseURI);
+        u.pathname = u.pathname.endsWith('/')
+          ? u.pathname + (style.glyphs as string)
+          : `${u.pathname.substring(0, u.pathname.lastIndexOf('/') + 1)}${style.glyphs}`;
+        (style as Record<string, unknown>).glyphs = u.toString();
+      } catch {
+        /* keep relative */
+      }
+    }
     const b = o.map.bounds!;
     this.map = new MlMap({
       container: mapEl,
@@ -311,21 +382,6 @@ export class LocationPicker {
         [b[1][1], b[1][0]],
       ],
     });
-    if (!o.map.style) {
-      let fellBack = false;
-      const onFirstIdle = (): void => {
-        this.map.off('error', onStyleError);
-      };
-      const onStyleError = (e: unknown): void => {
-        if (fellBack || this.destroyed) return;
-        fellBack = true;
-        this.map.setStyle(MAP_STYLE_RASTER as never);
-        this.map.off('idle', onFirstIdle);
-        this.fail(e);
-      };
-      this.map.once('idle', onFirstIdle);
-      this.map.on('error', onStyleError);
-    }
     requestAnimationFrame(() => this.map.resize());
     const wrap = this.root.querySelector('.qp-map-wrap') as HTMLElement;
     let timer = 0;
@@ -466,6 +522,106 @@ export class LocationPicker {
 
   private renderLabel(): void {
     this.labelEl.textContent = this.address ? faStr(this.address) : this.t('searchTitle');
+  }
+
+  // ── DEVELOPERS DOCS ──
+  private devDocsHtml(): string {
+    return `<div class="qp-docs" hidden><div class="qp-docs-card">
+      <button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button>
+      <h2>${this.t('developers')}</h2>
+      <section><h3>معرفی</h3><p>قم‌پیک (qompick) نقشه انتخاب موقعیت روی MapLibre است؛ کاملاً متن‌باز و رایگان. جستجوی آدرس، پین وسط نقشه، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست دارد؛ در دو نسخه vanilla با qompick-core و React با qompick-react.</p></section>
+      <section><h3>نصب</h3><pre dir="ltr">pnpm add qompick-core maplibre-gl
+pnpm add qompick-react  # فقط React (نیازمند react و react-dom)</pre>
+      <p class="qp-note">نکته: maplibre-gl نسخه ۶ یک peer dependency است و باید جدا نصب شود.</p>
+      <pre dir="ltr">npm i qompick-core maplibre-gl
+yarn add qompick-core maplibre-gl</pre></section>
+      <section><h3>شروع سریع (vanilla)</h3><pre dir="ltr">import 'maplibre-gl/dist/maplibre-gl.css';
+import 'qompick-core/styles.css';
+import { LocationPicker } from 'qompick-core';
+
+const picker = new LocationPicker({
+  container: '#map', // کانتینر باید ارتفاع داشته باشد، مثلاً 480px
+  map: { center: { lat: 34.6416, lng: 50.8764 }, zoom: 14 },
+  search: { suggestions: [{ name: '...', addr: '...', lat: 34.64, lng: 50.87 }] },
+  markers: [{ name: 'Venue', lat: 34.63, lng: 50.87 }],
+  onConfirm: (loc) =&gt; console.log(loc.lat, loc.lng, loc.address),
+});</pre></section>
+      <section><h3>شروع سریع (React)</h3><pre dir="ltr">import 'maplibre-gl/dist/maplibre-gl.css';
+import 'qompick-core/styles.css';
+import { LocationPickerView } from 'qompick-react';
+
+&lt;LocationPickerView
+  search={{ suggestions: [] }}
+  onConfirm={(loc) =&gt; console.log(loc)}
+/&gt;;</pre>
+      <p class="qp-note">نکته: کامپوننت خودش destroy را در cleanup صدا می‌زند. در vanilla موقع حذف کانتینر picker.destroy() را دستی صدا بزنید.</p></section>
+      <section><h3>تنظیمات مهم</h3><ul class="qp-list">
+      <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی (<code dir="ltr">style</code>).</li>
+      <li><code dir="ltr">search</code> — جستجو و پیشنهادها: <code dir="ltr">enabled / suggestions / minLength / debounceMs / limit</code>.</li>
+      <li><code dir="ltr">markers</code> — مارکر مکان‌ها با <code dir="ltr">name / lat / lng</code>.</li>
+      <li><code dir="ltr">controls</code> — دکمه‌ها: <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>
+      <li><code dir="ltr">i18n.labels</code> — متن‌ها و زبان؛ پیش‌فرض فارسی راست‌چین.</li></ul>
+      <pre dir="ltr">new LocationPicker({
+  container: '#map',
+  map: { center: { lat: 34.64, lng: 50.87 }, zoom: 15 },
+  search: { minLength: 3, limit: 5 },
+  controls: { gps: true, developers: true },
+});</pre></section>
+      <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. رنگ و فونت را با متغیرهای CSS عوض کنید، مثلاً:</p>
+      <pre dir="ltr">.qp { --qp-brand: #16a34a; --qp-radius: 16px; }</pre></section>
+      <section><h3>پرامپت شروع از صفر</h3><div class="qp-prompt">${DEV_PROMPT_ZERO}</div>
+      <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="zero">${this.t('copy')}</button></div></section>
+      <section><h3>پرامپت افزودن به پروژه موجود</h3><div class="qp-prompt">${DEV_PROMPT_EXISTING}</div>
+      <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="existing">${this.t('copy')}</button></div></section>
+      <section><h3>سوالات پرتکرار</h3><ul class="qp-list">
+      <li>نقشه خالی است؟ به کانتینر ارتفاع بدهید (مثلاً <code dir="ltr">480px</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
+      <li>کدام نسخه maplibre؟ نسخه ۶؛ چون peer dependency است باید جدا نصب شود.</li>
+      <li>در React نقشه خراب می‌شود؟ <code dir="ltr">destroy</code> را در cleanup تابع <code dir="ltr">useEffect</code> صدا بزنید (کامپوننت <code dir="ltr">LocationPickerView</code> خودش این کار را می‌کند).</li>
+      <li>رایگان است؟ بله، قم‌پیک کاملاً متن‌باز و رایگان است.</li></ul></section>
+      <div class="qp-modal-row"><button class="qp-cta qp-back" type="button">${this.t('backToMap')}</button></div>
+    </div></div>`;
+  }
+
+  private openDocs(): void {
+    (this.root.querySelector('.qp-docs') as HTMLElement | null)?.removeAttribute('hidden');
+  }
+  private closeDocs(): void {
+    const d = this.root.querySelector('.qp-docs') as HTMLElement | null;
+    if (d) d.hidden = true;
+  }
+
+  private copyPrompt(btn: HTMLButtonElement): void {
+    const done = (): void => {
+      const prev = btn.textContent ?? '';
+      btn.textContent = this.t('copied');
+      window.setTimeout(() => {
+        btn.textContent = prev;
+      }, 1500);
+    };
+    if (navigator.clipboard?.writeText) {
+      const key = btn.dataset.prompt ?? 'zero';
+      const text = DEV_PROMPTS[key] ?? DEV_PROMPT_ZERO;
+      navigator.clipboard.writeText(text).then(done, () => this.fallbackCopy(text, done));
+      return;
+    }
+    const key = btn.dataset.prompt ?? 'zero';
+    this.fallbackCopy(DEV_PROMPTS[key] ?? DEV_PROMPT_ZERO, done);
+  }
+
+  private fallbackCopy(text: string, done: () => void): void {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+    } catch {
+      /* clipboard unavailable */
+    }
+    ta.remove();
+    done();
   }
 
   // ── SEARCH ──
