@@ -1,7 +1,7 @@
 {
   "name": "qompick",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "packageManager": "pnpm@12.5.1",
   "type": "module",
   "scripts": {
