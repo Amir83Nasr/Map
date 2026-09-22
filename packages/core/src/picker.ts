@@ -10,9 +10,8 @@ import type {
 import { DEFAULT_CENTER, mergeOptions, resolveDir } from './defaults.js';
 import { MAP_STYLE } from './map-style.js';
 import { Emitter } from './emitter.js';
-import { applyTheme } from './theme.js';
 import { ICONS } from './icons.js';
-import { enDigits, faStr, isValidLatLng, shortAddr } from './format.js';
+import { enDigits, faCoord, faStr, isValidLatLng, shortAddr } from './format.js';
 import { reverseGeocode, searchLocation } from './geocode.js';
 import { trySnapToRoad } from './snap.js';
 
@@ -167,16 +166,9 @@ export class LocationPicker {
 
   private build(host: HTMLElement): void {
     const o = this.opts;
-    const dir = resolveDir(o.i18n.dir);
+    const dir = resolveDir();
     this.root = el(`<div class="qp qp-app" dir="${dir}"></div>`);
-    applyTheme(this.root, o.theme);
-    const m = this.opts.marker;
-    const pinHtml =
-      m.type === 'none'
-        ? ''
-        : m.type === 'html' && m.element
-          ? `<div class="qp-pin" id="qpPin"></div>`
-          : `<div class="qp-pin" aria-hidden="true"><div class="qp-pin-body"><div class="qp-pin-head"${m.color ? ` style="background:${m.color}"` : ''}></div><div class="qp-pin-stem"></div><div class="qp-pin-foot"></div></div><div class="qp-pin-shadow"></div></div>`;
+    const pinHtml = `<div class="qp-pin" aria-hidden="true"><div class="qp-pin-body"><div class="qp-pin-head"><div class="qp-pin-hole"></div></div><div class="qp-pin-stem"></div><div class="qp-pin-foot"></div></div><div class="qp-pin-shadow"></div></div>`;
     this.root.innerHTML = `
       <div class="qp-layout">
         <main class="qp-map-wrap">${'<div class="qp-map"></div>'}${pinHtml}
@@ -203,15 +195,6 @@ export class LocationPicker {
       <div class="qp-modal qp-confirm" hidden><div class="qp-modal-card"><h2>${this.t('confirmLocation')}</h2><label>${this.t('chosenAddress')}</label><textarea class="qp-addr" rows="3"></textarea><div>${this.t('coordsToServer')}</div><div class="qp-coords" dir="ltr"></div><div class="qp-modal-row"><button class="qp-cta qp-final">${this.t('confirm')}</button><button class="qp-ghost qp-edit">${this.t('editOnMap')}</button></div></div></div>
       <div class="qp-toast" role="status"></div>`;
     host.appendChild(this.root);
-    if (m.type === 'html' && m.element) this.root.querySelector('#qpPin')?.appendChild(m.element);
-    if (m.className) this.root.querySelector('.qp-pin')?.classList.add(m.className);
-    if (m.type === 'default' && m.size) {
-      const p = this.root.querySelector('.qp-pin-head') as HTMLElement | null;
-      if (p) {
-        p.style.width = `${m.size}px`;
-        p.style.height = `${m.size}px`;
-      }
-    }
     this.labelEl = this.root.querySelector('.qp-search-label') ?? el('<span></span>');
     this.toastEl = this.root.querySelector('.qp-toast') as HTMLElement;
     this.overlay = this.root.querySelector('.qp-overlay') ?? el('<div></div>');
@@ -274,7 +257,10 @@ export class LocationPicker {
     }
     const o = this.opts;
     const mapEl = this.root.querySelector('.qp-map') as HTMLElement;
-    const base = (o.map.style ?? MAP_STYLE) as typeof MAP_STYLE & { glyphs?: string };
+    const base =
+      typeof o.map.style === 'object' && o.map.style !== null
+        ? { ...(o.map.style as Record<string, unknown>) }
+        : ({ ...MAP_STYLE } as Record<string, unknown>);
     const style = o.map.glyphs ? { ...base, glyphs: o.map.glyphs } : base;
     const b = o.map.bounds!;
     this.map = new MlMap({
@@ -362,9 +348,17 @@ export class LocationPicker {
         closeButton: false,
         className: 'qp-venue-pop-wrap',
       }).setDOMContent(content);
-      this.venueMarkers.push(
-        new Marker({ element: btn }).setLngLat([v.lng, v.lat]).setPopup(popup).addTo(this.map),
-      );
+      const marker = new Marker({ element: btn })
+        .setLngLat([v.lng, v.lat])
+        .setPopup(popup)
+        .addTo(this.map);
+      let timer = 0;
+      popup.on('open', () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => popup.remove(), 4000);
+      });
+      popup.on('close', () => window.clearTimeout(timer));
+      this.venueMarkers.push(marker);
     }
   }
 
@@ -530,12 +524,20 @@ export class LocationPicker {
   }
 
   private finishConfirm(): void {
+    const finalBtn = this.root.querySelector('.qp-final') as HTMLButtonElement;
     const addr = (this.root.querySelector('.qp-addr') as HTMLTextAreaElement).value;
-    const loc = this.confirm(addr);
-    this.closeModal('qp-confirm');
-    this.toast(
-      `${this.t('registered')} (${faStr(Number(loc.lat).toFixed(5))}, ${faStr(Number(loc.lng).toFixed(5))})`,
-    );
+    finalBtn.disabled = true;
+    const prev = finalBtn.textContent ?? '';
+    finalBtn.textContent = 'در حال ثبت...';
+    window.setTimeout(() => {
+      finalBtn.disabled = false;
+      finalBtn.textContent = prev;
+      const loc = this.confirm(addr);
+      this.closeModal('qp-confirm');
+      this.toast(
+        `${this.t('registered')} (${faCoord(Number(loc.lat))}, ${faCoord(Number(loc.lng))})`,
+      );
+    }, 800);
   }
 
   private toast(msg: string): void {

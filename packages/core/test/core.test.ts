@@ -2,30 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { Emitter } from '../src/emitter.js';
 import { mergeOptions, resolveDir, resolveLabels } from '../src/defaults.js';
 import { enDigits, faStr, isValidLatLng, shortAddr } from '../src/format.js';
-import { themeVars } from '../src/theme.js';
+import { applyTheme, themeVars } from '../src/theme.js';
 import { FA_LABELS } from '../src/i18n.js';
 
 describe('mergeOptions', () => {
   it('applies defaults', () => {
     const m = mergeOptions({ container: '#qp' });
     expect(m.map.zoom).toBe(14);
-    expect(m.marker.type).toBe('default');
     expect(m.markers).toEqual([]);
-  });
-  it('deep-merges nested keys', () => {
-    const m = mergeOptions({ container: '#qp', map: { zoom: 16 }, theme: { brand: 'red' } });
-    expect(m.map.zoom).toBe(16);
-    expect(m.map.minZoom).toBe(11);
-    expect(m.theme.brand).toBe('red');
   });
 });
 
 describe('labels/dir', () => {
-  it('fa defaults, en override', () => {
+  it('fa only, always rtl', () => {
     expect(mergeOptions({ container: '#qp' }).i18n.labels.searchTitle).toBe(FA_LABELS.searchTitle);
-    expect(resolveLabels({ locale: 'en' }).close).toBe('Close');
-    expect(resolveDir('auto')).toBe('rtl');
-    expect(resolveDir('ltr')).toBe('ltr');
+    expect(resolveLabels().close).toBe(FA_LABELS.close);
+    expect(resolveDir()).toBe('rtl');
   });
 });
 
@@ -59,10 +51,9 @@ describe('emitter', () => {
   });
 });
 
-describe('themeVars', () => {
-  it('maps keys to --qp-* vars', () => {
-    expect(themeVars({ brand: '#fff', radius: 8 })['--qp-brand']).toBe('#fff');
-    expect(themeVars({ radius: 8 })['--qp-radius']).toBe('8px');
-    expect(themeVars({})).toEqual({});
+describe('theme', () => {
+  it('locked: no vars, no-op apply', () => {
+    expect(themeVars()).toEqual({});
+    expect(applyTheme()).toBeUndefined();
   });
 });

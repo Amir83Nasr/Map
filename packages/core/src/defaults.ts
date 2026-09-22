@@ -1,18 +1,15 @@
 import type { I18nOption, Labels, LocationPickerOptions } from './types.js';
-import { EN_LABELS, FA_LABELS } from './i18n.js';
+import { FA_LABELS } from './i18n.js';
 
 export const DEFAULT_CENTER: { lat: number; lng: number } = { lat: 34.6416, lng: 50.8764 };
 export const DEFAULT_ZOOM = 14;
 
 export function resolveLabels(i18n?: I18nOption): Labels {
-  const base = i18n?.locale === 'en' ? EN_LABELS : FA_LABELS;
-  return { ...base, ...(i18n?.labels ?? {}) };
+  return { ...FA_LABELS, ...(i18n?.labels ?? {}) };
 }
 
-export function resolveDir(dir: I18nOption['dir']): 'rtl' | 'ltr' {
-  if (dir === 'ltr') return 'ltr';
-  if (dir === 'rtl') return 'rtl';
-  return 'rtl'; // ponytail: 'auto' follows fa default; detect document.dir when embedded
+export function resolveDir(): 'rtl' {
+  return 'rtl';
 }
 
 // Deep-merge user options over library defaults (arrays replace, objects merge).
@@ -35,11 +32,9 @@ export function mergeOptions(
       ],
       ...(o.map ?? {}),
     },
-    marker: { type: 'default', ...(o.marker ?? {}) },
     controls: { gps: true, confirmButton: true, searchTrigger: true, ...(o.controls ?? {}) },
     search: { enabled: true, minLength: 3, debounceMs: 600, limit: 5, ...(o.search ?? {}) },
     sheet: { enabled: true, desktopSidebar: true, ...(o.sheet ?? {}) },
-    theme: { ...(o.theme ?? {}) },
     behavior: {
       snapToRoad: true,
       resolveOnMove: true,
@@ -49,7 +44,7 @@ export function mergeOptions(
       locateZoom: 18,
       ...(o.behavior ?? {}),
     },
-    i18n: { dir: 'rtl', locale: 'fa', ...(o.i18n ?? {}), labels: resolveLabels(o.i18n) },
+    i18n: { labels: resolveLabels(o.i18n) },
     markers: o.markers ?? [],
   };
 }

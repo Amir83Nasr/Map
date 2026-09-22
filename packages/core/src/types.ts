@@ -22,15 +22,6 @@ export interface NominatimResult {
   lon: string;
 }
 
-export type MarkerType = 'default' | 'none' | 'html';
-export interface MarkerOption {
-  type?: MarkerType;
-  element?: HTMLElement;
-  className?: string;
-  color?: string;
-  size?: number;
-}
-
 export interface MapOption {
   style?: string | StyleSpecification;
   center?: { lat: number; lng: number };
@@ -59,18 +50,6 @@ export interface SheetOption {
   enabled?: boolean;
   desktopSidebar?: boolean;
 }
-export interface ThemeOption {
-  brand?: string;
-  brandDark?: string;
-  bg?: string;
-  card?: string;
-  ink?: string;
-  muted?: string;
-  line?: string;
-  radius?: number;
-  shadow?: string;
-  fontFamily?: string;
-}
 export interface BehaviorOption {
   snapToRoad?: boolean;
   resolveOnMove?: boolean;
@@ -80,8 +59,6 @@ export interface BehaviorOption {
   locateZoom?: number;
 }
 export interface I18nOption {
-  dir?: 'rtl' | 'ltr' | 'auto';
-  locale?: 'fa' | 'en';
   labels?: Partial<Labels>;
 }
 export interface Labels {
@@ -124,11 +101,9 @@ export interface PickerCallbacks {
 export interface LocationPickerOptions extends PickerCallbacks {
   container: HTMLElement | string;
   map?: MapOption;
-  marker?: MarkerOption;
   controls?: ControlsOption;
   search?: SearchOption;
   sheet?: SheetOption;
-  theme?: ThemeOption;
   behavior?: BehaviorOption;
   i18n?: I18nOption;
   markers?: Venue[];

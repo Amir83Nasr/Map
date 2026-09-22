@@ -9,7 +9,7 @@
   --qp-brand-dark: oklch(48% 0.12 240);
   --qp-radius: 16px;
   --qp-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
-  --qp-font: Tahoma, system-ui, -apple-system, sans-serif;
+  --qp-font: 'IRANYekanX', Tahoma, system-ui, -apple-system, sans-serif;
 }
 .qp,
 .qp * {
@@ -68,6 +68,14 @@
   border: 2px solid #fff;
   display: grid;
   place-items: center;
+  z-index: 4;
+}
+.qp-pin-hole {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  z-index: 5;
 }
 .qp-pin-stem {
   width: 2px;
@@ -114,7 +122,7 @@
 .qp-gps {
   position: absolute;
   bottom: 12px;
-  inset-inline-end: 12px;
+  right: 12px;
   z-index: 450;
   width: 52px;
   height: 52px;
@@ -194,11 +202,17 @@
   width: 13px;
   height: 13px;
 }
+.qp-venue-pop-wrap {
+  z-index: 500;
+}
 .qp-venue-pop-wrap .maplibregl-popup-content {
   background: transparent;
   box-shadow: none;
   padding: 0;
   border-radius: 999px;
+}
+.qp-venue-pop-wrap.maplibregl-popup-anchor-top {
+  transform: translate(-50%, 8px);
 }
 .qp-venue-pop-wrap .maplibregl-popup-tip {
   display: none;
@@ -499,7 +513,7 @@
     position: absolute;
     top: 24px;
     bottom: 24px;
-    inset-inline-end: 24px;
+    right: 24px;
     width: 384px;
     border-radius: 20px;
     box-shadow: var(--qp-shadow);
@@ -513,8 +527,8 @@
   .qp-overlay {
     top: 24px;
     bottom: 24px;
-    inset-inline-end: 24px;
-    inset-inline-start: auto;
+    right: 24px;
+    left: auto;
     width: 384px;
     border-radius: 20px;
     border: 1px solid var(--qp-line);

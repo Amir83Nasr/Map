@@ -8,7 +8,7 @@ export {
   DEFAULT_ZOOM,
 } from './defaults.js';
 export { FA_LABELS, EN_LABELS } from './i18n.js';
-export { themeVars, applyTheme } from './theme.js';
+export { applyTheme, themeVars } from './theme.js';
 export { Emitter } from './emitter.js';
 export { faStr, faCoord, enDigits, shortAddr, isValidLatLng } from './format.js';
 export { MAP_STYLE } from './map-style.js';

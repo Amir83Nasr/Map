@@ -28,29 +28,4 @@ export const FA_LABELS: Labels = {
   enableAccess: 'فعال کردن دسترسی',
 };
 
-export const EN_LABELS: Labels = {
-  searchPlaceholder: 'Search location...',
-  searchTitle: 'Search location',
-  suggestedPlaces: 'Suggested places',
-  searching: 'Searching...',
-  noResults: 'No results found; try another query',
-  searchError: 'Search failed; check your connection',
-  confirmLocation: 'Confirm location',
-  confirm: 'Confirm',
-  editOnMap: 'Edit on map',
-  chosenAddress: 'Selected address',
-  coordsToServer: 'Coordinates sent to server',
-  close: 'Close',
-  clearSearch: 'Clear search',
-  currentLocation: 'Current location',
-  locating: 'Resolving address...',
-  resolving: 'Resolving address...',
-  registered: 'Location saved',
-  gpsUnsupported: 'Geolocation is not supported in this browser',
-  locateTimeout: 'Locating took too long; pick manually',
-  locateUnavailable: 'Location unavailable; pick manually',
-  geoTitle: 'Location access',
-  geoText: 'To use your current position, please enable location access.',
-  geoBlocked: 'The browser previously blocked access. Allow Location in the site settings.',
-  enableAccess: 'Enable access',
-};
+export const EN_LABELS: Labels = { ...FA_LABELS };

@@ -1031,13 +1031,16 @@ const layers = [
   },
 ];
 
+export const OPENFREEMAP_TILEJSON_URL = 'https://tiles.openfreemap.org/planet';
+
 export const MAP_STYLE = {
   version: 8,
   name: 'snapp-like',
-  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  // Relative so subpath deploys (e.g. GitHub Pages /<repo>/) resolve too.
+  glyphs: 'fonts/{fontstack}/{range}.pbf',
   sprite: 'https://tiles.openfreemap.org/sprites/ofm_f384/ofm',
   sources: {
-    openmaptiles: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' },
+    openmaptiles: { type: 'vector', url: OPENFREEMAP_TILEJSON_URL },
   },
   layers,
 } as unknown as StyleSpecification;
