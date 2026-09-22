@@ -184,9 +184,6 @@ importers:
       maplibre-gl:
         specifier: ^6.10.0
         version: 6.10.0
-      qompick-core:
-        specifier: workspace:*
-        version: link:../packages/core
       qompick-react:
         specifier: workspace:*
         version: link:../packages/react
@@ -213,32 +210,8 @@ importers:
         specifier: ^6.0.0
         version: 6.4.3(jiti@2.7.0)(lightningcss@1.32.0)
 
-  packages/core:
-    devDependencies:
-      '@maplibre/maplibre-gl-style-spec':
-        specifier: ^26.4.4
-        version: 26.4.4
-      maplibre-gl:
-        specifier: ^6.10.0
-        version: 6.10.0
-      typescript:
-        specifier: ~5.7.0
-        version: 5.7.3
-      vite:
-        specifier: ^6.0.0
-        version: 6.4.3(jiti@2.7.0)(lightningcss@1.32.0)
-      vite-plugin-dts:
-        specifier: ^4.5.0
-        version: 4.5.4(rollup@4.63.4)(supports-color@7.2.0)(typescript@5.7.3)(vite@6.4.3(jiti@2.7.0)(lightningcss@1.32.0))
-      vitest:
-        specifier: ^2.1.0
-        version: 2.1.9(lightningcss@1.32.0)(supports-color@7.2.0)
-
   packages/react:
     dependencies:
-      qompick-core:
-        specifier: workspace:*
-        version: link:../core
       react-dom:
         specifier: ^18 || ^19
         version: 18.3.1(react@18.3.1)
@@ -261,6 +234,9 @@ importers:
       vite-plugin-dts:
         specifier: ^4.5.0
         version: 4.5.4(rollup@4.63.4)(supports-color@7.2.0)(typescript@5.7.3)(vite@6.4.3(jiti@2.7.0)(lightningcss@1.32.0))
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(lightningcss@1.32.0)(supports-color@7.2.0)
 
 packages:
 

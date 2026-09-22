@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter qompick-demo dev",
-    "build": "pnpm --filter qompick-core build && pnpm --filter qompick-react build && pnpm --filter qompick-demo build",
-    "typecheck": "pnpm --filter qompick-core build && pnpm --filter qompick-react build && pnpm --filter qompick-core typecheck && pnpm --filter qompick-react typecheck && pnpm --filter qompick-demo exec tsc --noEmit",
+    "build": "pnpm --filter qompick-react build && pnpm --filter qompick-demo build",
+    "typecheck": "pnpm --filter qompick-react build && pnpm --filter qompick-react typecheck && pnpm --filter qompick-demo exec tsc --noEmit",
     "lint": "eslint packages demo",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "pnpm --filter qompick-core test",
+    "test": "pnpm --filter qompick-react test",
     "prepare": "git config core.hooksPath .githooks"
   },
   "devDependencies": {

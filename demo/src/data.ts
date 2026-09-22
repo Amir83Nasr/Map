@@ -1,4 +1,4 @@
-import type { SearchSuggestion, Venue } from 'qompick-core';
+import type { SearchSuggestion, Venue } from 'qompick-react';
 
 export const QOM_SUGGEST: SearchSuggestion[] = [
   { name: '۱۹ دی، قم', addr: 'محله ۱۹ دی، شهر قم', lat: 34.6558, lng: 50.9055 },

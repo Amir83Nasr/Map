@@ -1,14 +1,26 @@
 'use client';
+import './styles.css';
 import { useEffect, useRef } from 'react';
-import { LocationPicker } from 'qompick-core';
-import type { LocationPickerOptions, PickerLocation } from 'qompick-core';
+import { LocationPicker } from './picker.js';
+import type { LocationPickerOptions, NominatimResult, PickerLocation } from './types.js';
 
 export interface QomPickProps extends Omit<
   LocationPickerOptions,
-  'container' | 'onLocationChange' | 'onConfirm' | 'onError'
+  | 'container'
+  | 'onLocationChange'
+  | 'onAddressResolved'
+  | 'onSearchResults'
+  | 'onPick'
+  | 'onConfirm'
+  | 'onLocate'
+  | 'onError'
 > {
   onLocationChange?: (loc: PickerLocation) => void;
+  onAddressResolved?: (loc: PickerLocation) => void;
+  onSearchResults?: (r: NominatimResult[]) => void;
+  onPick?: (loc: PickerLocation) => void;
   onConfirm?: (loc: PickerLocation) => void;
+  onLocate?: (loc: PickerLocation) => void;
   onError?: (err: Error) => void;
   className?: string;
   style?: React.CSSProperties;
@@ -16,7 +28,11 @@ export interface QomPickProps extends Omit<
 
 export function LocationPickerView({
   onLocationChange,
+  onAddressResolved,
+  onSearchResults,
+  onPick,
   onConfirm,
+  onLocate,
   onError,
   className,
   style,
@@ -24,15 +40,35 @@ export function LocationPickerView({
 }: QomPickProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const picker = useRef<LocationPicker | null>(null);
-  const cb = useRef({ onLocationChange, onConfirm, onError });
-  cb.current = { onLocationChange, onConfirm, onError };
+  const cb = useRef({
+    onLocationChange,
+    onAddressResolved,
+    onSearchResults,
+    onPick,
+    onConfirm,
+    onLocate,
+    onError,
+  });
+  cb.current = {
+    onLocationChange,
+    onAddressResolved,
+    onSearchResults,
+    onPick,
+    onConfirm,
+    onLocate,
+    onError,
+  };
   useEffect(() => {
     if (!ref.current) return;
     const p = new LocationPicker({
       ...opts,
       container: ref.current,
       onLocationChange: (l) => cb.current.onLocationChange?.(l),
+      onAddressResolved: (l) => cb.current.onAddressResolved?.(l),
+      onSearchResults: (r) => cb.current.onSearchResults?.(r),
+      onPick: (l) => cb.current.onPick?.(l),
       onConfirm: (l) => cb.current.onConfirm?.(l),
+      onLocate: (l) => cb.current.onLocate?.(l),
       onError: (e) => cb.current.onError?.(e),
     });
     picker.current = p;
@@ -44,5 +80,4 @@ export function LocationPickerView({
   return <div ref={ref} className={className} style={{ height: 480, ...style }} />;
 }
 
-export { LocationPicker };
-export type { LocationPickerOptions, PickerLocation };
+export type * from './types.js';

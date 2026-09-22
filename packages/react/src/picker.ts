@@ -17,29 +17,29 @@ import { trySnapToRoad } from './snap.js';
 const MIN_QUERY_LEN_FALLBACK = 3;
 
 const DEV_PROMPT_ZERO =
-  'من می‌خواهم با پکیج قم‌پیک (qompick) یک نقشه انتخاب موقعیت (LocationPicker) از صفر در پروژه‌ام بسازم. ' +
-  'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده؛ در دو نسخه vanilla با qompick-core و React با qompick-react عرضه می‌شود. ' +
+  'من می‌خواهم با پکیج قم‌پیک (qompick-react) یک نقشه انتخاب موقعیت (LocationPickerView) از صفر در پروژه React/Next.js بسازم. ' +
+  'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده و فقط نسخه React دارد. ' +
   'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
-  '۱) نصب — دستور نصب qompick-core و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود) و در صورت React نصب qompick-react؛ ' +
-  '۲) راه‌اندازی پایه — ایمپورت maplibre-gl/dist/maplibre-gl.css و qompick-core/styles.css، ساخت کانتینر با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود)، ساخت LocationPicker با container و center و zoom اولیه؛ ' +
+  '۱) نصب — دستور نصب qompick-react و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)؛ ' +
+  '۲) راه‌اندازی پایه — ایمپورت maplibre-gl/dist/maplibre-gl.css و qompick-react/styles.css، رندر کامپوننت LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) و center و zoom اولیه؛ ' +
   '۳) جستجو — فعال‌سازی search و دادن suggestions اولیه با فیلدهای name و addr و lat و lng؛ ' +
   '۴) مارکرها — نمایش مارکر مکان‌ها با markers؛ ' +
-  '۵) دریافت نتیجه — گرفتن مختصات و آدرس تاییدشده کاربر با onConfirm یا رویداد confirm؛ ' +
-  '۶) پاک‌سازی در React — صدا زدن destroy در cleanup تابع useEffect (کامپوننت LocationPickerView خودش این کار را می‌کند). ' +
+  '۵) دریافت نتیجه — گرفتن مختصات و آدرس تاییدشده کاربر با onConfirm؛ ' +
+  '۶) پاک‌سازی — کامپوننت LocationPickerView خودش destroy را در cleanup صدا می‌زند. ' +
   'کد کامل و قابل اجرا بده شامل همه importها و cssها، بگو هر بخش چه می‌کند، و در پایان خروجی مورد انتظار را توصیف کن: نقشه فارسی راست‌چین (RTL) و موبایل‌فرست با پین وسط، دکمه GPS، جستجو و دکمه تایید موقعیت. ' +
-  'اگر چیزی از پروژه من لازم داری (vanilla یا React بودن، نسخه پکیج‌ها) اول بپرس.';
+  'اگر چیزی از پروژه من لازم داری (نسخه React/Next.js، نسخه پکیج‌ها) اول بپرس.';
 
 const DEV_PROMPT_EXISTING =
-  'پروژه من از قبل وجود دارد و می‌خواهم نقشه انتخاب موقعیت قم‌پیک (qompick) را به آن اضافه کنم بدون این‌که چیز دیگری خراب شود. ' +
-  'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده؛ در دو نسخه vanilla با qompick-core و React با qompick-react عرضه می‌شود. ' +
+  'پروژه React/Next.js من از قبل وجود دارد و می‌خواهم نقشه انتخاب موقعیت قم‌پیک (qompick-react) را به آن اضافه کنم بدون این‌که چیز دیگری خراب شود. ' +
+  'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده و فقط نسخه React دارد. ' +
   'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
-  '۱) نصب — دستور نصب qompick-core و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود) و در صورت React نصب qompick-react، با توجه به این‌که بقیه dependencyهای پروژه نباید به‌هم بخورد؛ ' +
-  '۲) ایمپورت cssها — اضافه کردن maplibre-gl/dist/maplibre-gl.css و qompick-core/styles.css طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
-  '۳) کانتینر — ساخت کانتینر با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) در جای مناسب صفحه فعلی؛ ' +
-  '۴) اتصال — ساخت LocationPicker با container و center و zoom، اضافه کردن search با suggestions، نمایش markers، و گرفتن مختصات و آدرس تاییدشده با onConfirm یا رویداد confirm؛ ' +
-  '۵) پاک‌سازی — در React صدا زدن destroy در cleanup تابع useEffect (کامپوننت LocationPickerView خودش این کار را می‌کند) و در vanilla صدا زدن دستی picker.destroy موقع حذف کانتینر. ' +
+  '۱) نصب — دستور نصب qompick-react و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)، با توجه به این‌که بقیه dependencyهای پروژه نباید به‌هم بخورد؛ ' +
+  '۲) ایمپورت cssها — اضافه کردن maplibre-gl/dist/maplibre-gl.css و qompick-react/styles.css طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
+  '۳) کانتینر — رندر LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) در جای مناسب صفحه فعلی؛ ' +
+  '۴) اتصال — دادن center و zoom، اضافه کردن search با suggestions، نمایش markers، و گرفتن مختصات و آدرس تاییدشده با onConfirm؛ ' +
+  '۵) پاک‌سازی — کامپوننت LocationPickerView خودش destroy را در cleanup صدا می‌زند. ' +
   'کد کامل و قابل اجرا بده شامل همه importها، بگو هر بخش چه می‌کند، و در پایان خروجی مورد انتظار را توصیف کن: نقشه فارسی راست‌چین (RTL) و موبایل‌فرست با پین وسط، دکمه GPS، جستجو و دکمه تایید موقعیت. ' +
-  'اگر چیزی از پروژه من لازم داری (vanilla یا React بودن، فریم‌ورک، نسخه پکیج‌ها، ساختار فایل‌ها) اول بپرس.';
+  'اگر چیزی از پروژه من لازم داری (نسخه React/Next.js، نسخه پکیج‌ها، ساختار فایل‌ها) اول بپرس.';
 
 const DEV_PROMPTS: Record<string, string> = {
   zero: DEV_PROMPT_ZERO,
@@ -140,7 +140,7 @@ export class LocationPicker {
     const loc = this.getLocation();
     this.emitter.emit('locationChange', loc);
     if (opts.moveMap && this.map) {
-      const zoom = opts.zoom ?? Math.max(this.map.getZoom(), this.opts.behavior.pickZoom ?? 11);
+      const zoom = opts.zoom ?? Math.max(this.map.getZoom(), this.opts.behavior.pickZoom ?? 15);
       this.map.flyTo({ center: [lng, lat], zoom, duration: 450 });
     }
     if (opts.resolve !== false && this.opts.behavior.resolveOnMove !== false)
@@ -165,6 +165,9 @@ export class LocationPicker {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         btn?.classList.remove('is-locating');
+        // موقعیت GPS ممکن است خارج از bounds پیش‌فرض (محدوده قم) باشد؛
+        // بدون برداشتن سقف، flyTo به لبه bounds clamp می‌شود و دکمه بی‌اثر به نظر می‌رسد.
+        this.map.setMaxBounds(null);
         this.showMyPos(p.coords.latitude, p.coords.longitude);
         this.setLocation(p.coords.latitude, p.coords.longitude, {
           moveMap: true,
@@ -241,14 +244,14 @@ export class LocationPicker {
       </div>
       ${
         o.search.enabled
-          ? `<div class="qp-overlay" hidden><div class="qp-ov-head"><h2>${this.t('searchTitle')}</h2><button class="qp-ov-close" aria-label="${this.t('close')}">${ICONS.x}</button></div>
+          ? `<div class="qp-overlay" hidden><div class="qp-ov-head"><h2>${this.t('searchTitle')}</h2><button class="qp-ov-close" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div>
         <div class="qp-search-bar"><div class="qp-field"><input type="search" placeholder="${this.t('searchPlaceholder')}" autocomplete="off"/><button class="qp-clear" hidden aria-label="${this.t('clearSearch')}">${ICONS.x}</button><span class="qp-sic">${ICONS.search}</span></div></div>
         <div class="qp-ov-body"><div class="qp-home"><h3 class="qp-sec-t">${this.t('suggestedPlaces')}</h3><div class="qp-suggest"></div></div><div class="qp-results"></div></div>
       </div>`
           : ''
       }
-      <div class="qp-modal qp-geo" hidden><div class="qp-modal-card"><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button><h2>${this.t('geoTitle')}</h2><p>${this.t('geoText')}</p><p class="qp-modal-sub">${this.t('geoBlocked')}</p><div class="qp-modal-row"><button class="qp-cta qp-geo-retry">${this.t('enableAccess')}</button></div></div></div>
-      <div class="qp-modal qp-confirm" hidden><div class="qp-modal-card"><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button><h2>${this.t('confirmLocation')}</h2><label>${this.t('chosenAddress')}</label><textarea class="qp-addr" rows="3"></textarea><div>${this.t('coordsToServer')}</div><div class="qp-coords" dir="ltr"></div><div class="qp-modal-row"><button class="qp-cta qp-final">${this.t('confirm')}</button><button class="qp-ghost qp-edit">${this.t('editOnMap')}</button></div></div></div>
+      <div class="qp-modal qp-geo" hidden><div class="qp-modal-card"><div class="qp-modal-head"><h2>${this.t('geoTitle')}</h2><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div><p>${this.t('geoText')}</p><p class="qp-modal-sub">${this.t('geoBlocked')}</p><div class="qp-modal-row"><button class="qp-cta qp-geo-retry" type="button">${this.t('enableAccess')}</button></div></div></div>
+      <div class="qp-modal qp-confirm" hidden><div class="qp-modal-card"><div class="qp-modal-head"><h2>${this.t('confirmLocation')}</h2><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div><label>${this.t('chosenAddress')}</label><textarea class="qp-addr" rows="3"></textarea><div>${this.t('coordsToServer')}</div><div class="qp-coords" dir="ltr"></div><div class="qp-modal-row"><button class="qp-cta qp-final" type="button">${this.t('confirm')}</button><button class="qp-ghost qp-edit" type="button">${this.t('editOnMap')}</button></div></div></div>
       ${o.controls.developers ? this.devDocsHtml() : ''}
       <div class="qp-toast" role="status"></div>`;
     host.appendChild(this.root);
@@ -461,7 +464,7 @@ export class LocationPicker {
       ) as HTMLButtonElement;
       btn.type = 'button';
       btn.addEventListener('click', () => {
-        this.setLocation(v.lat, v.lng, { moveMap: true });
+        this.setLocation(v.lat, v.lng, { moveMap: true, zoom: this.opts.behavior.pickZoom });
         this.emitter.emit('pick', this.getLocation());
       });
       const content = el(
@@ -526,46 +529,33 @@ export class LocationPicker {
   // ── DEVELOPERS DOCS ──
   private devDocsHtml(): string {
     return `<div class="qp-docs" hidden><div class="qp-docs-card">
-      <button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button>
-      <h2>${this.t('developers')}</h2>
-      <section><h3>معرفی</h3><p>قم‌پیک (qompick) نقشه انتخاب موقعیت روی MapLibre است؛ کاملاً متن‌باز و رایگان. جستجوی آدرس، پین وسط نقشه، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست دارد؛ در دو نسخه vanilla با qompick-core و React با qompick-react.</p></section>
-      <section><h3>نصب</h3><pre dir="ltr">pnpm add qompick-core maplibre-gl
-pnpm add qompick-react  # فقط React (نیازمند react و react-dom)</pre>
-      <p class="qp-note">نکته: maplibre-gl نسخه ۶ یک peer dependency است و باید جدا نصب شود.</p>
-      <pre dir="ltr">npm i qompick-core maplibre-gl
-yarn add qompick-core maplibre-gl</pre></section>
-      <section><h3>شروع سریع (vanilla)</h3><pre dir="ltr">import 'maplibre-gl/dist/maplibre-gl.css';
-import 'qompick-core/styles.css';
-import { LocationPicker } from 'qompick-core';
-
-const picker = new LocationPicker({
-  container: '#map', // کانتینر باید ارتفاع داشته باشد، مثلاً 480px
-  map: { center: { lat: 34.6416, lng: 50.8764 }, zoom: 14 },
-  search: { suggestions: [{ name: '...', addr: '...', lat: 34.64, lng: 50.87 }] },
-  markers: [{ name: 'Venue', lat: 34.63, lng: 50.87 }],
-  onConfirm: (loc) =&gt; console.log(loc.lat, loc.lng, loc.address),
-});</pre></section>
+      <div class="qp-modal-head"><h2>${this.t('developers')}</h2><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div>
+      <section><h3>معرفی</h3><p>قم‌پیک (qompick-react) نقشه انتخاب موقعیت روی MapLibre برای React است؛ کاملاً متن‌باز و رایگان. جستجوی آدرس، پین وسط نقشه، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست دارد.</p></section>
+      <section><h3>نصب</h3><pre dir="ltr">pnpm add qompick-react maplibre-gl</pre>
+      <p class="qp-note">نکته: maplibre-gl نسخه ۶ و react/react-dom peer dependency هستند و باید جدا نصب شوند.</p>
+      <pre dir="ltr">npm i qompick-react maplibre-gl
+yarn add qompick-react maplibre-gl</pre></section>
       <section><h3>شروع سریع (React)</h3><pre dir="ltr">import 'maplibre-gl/dist/maplibre-gl.css';
-import 'qompick-core/styles.css';
+import 'qompick-react/styles.css';
 import { LocationPickerView } from 'qompick-react';
 
 &lt;LocationPickerView
   search={{ suggestions: [] }}
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre>
-      <p class="qp-note">نکته: کامپوننت خودش destroy را در cleanup صدا می‌زند. در vanilla موقع حذف کانتینر picker.destroy() را دستی صدا بزنید.</p></section>
+      <p class="qp-note">نکته: کامپوننت خودش destroy را در cleanup صدا می‌زند.</p>
+      <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
       <section><h3>تنظیمات مهم</h3><ul class="qp-list">
       <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی (<code dir="ltr">style</code>).</li>
       <li><code dir="ltr">search</code> — جستجو و پیشنهادها: <code dir="ltr">enabled / suggestions / minLength / debounceMs / limit</code>.</li>
       <li><code dir="ltr">markers</code> — مارکر مکان‌ها با <code dir="ltr">name / lat / lng</code>.</li>
       <li><code dir="ltr">controls</code> — دکمه‌ها: <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>
       <li><code dir="ltr">i18n.labels</code> — متن‌ها و زبان؛ پیش‌فرض فارسی راست‌چین.</li></ul>
-      <pre dir="ltr">new LocationPicker({
-  container: '#map',
-  map: { center: { lat: 34.64, lng: 50.87 }, zoom: 15 },
-  search: { minLength: 3, limit: 5 },
-  controls: { gps: true, developers: true },
-});</pre></section>
+      <pre dir="ltr">&lt;LocationPickerView
+  map={{ center: { lat: 34.64, lng: 50.87 }, zoom: 15 }}
+  search={{ minLength: 3, limit: 5 }}
+  controls={{ gps: true, developers: true }}
+/&gt;;</pre></section>
       <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. رنگ و فونت را با متغیرهای CSS عوض کنید، مثلاً:</p>
       <pre dir="ltr">.qp { --qp-brand: #16a34a; --qp-radius: 16px; }</pre></section>
       <section><h3>پرامپت شروع از صفر</h3><div class="qp-prompt">${DEV_PROMPT_ZERO}</div>
@@ -573,9 +563,9 @@ import { LocationPickerView } from 'qompick-react';
       <section><h3>پرامپت افزودن به پروژه موجود</h3><div class="qp-prompt">${DEV_PROMPT_EXISTING}</div>
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="existing">${this.t('copy')}</button></div></section>
       <section><h3>سوالات پرتکرار</h3><ul class="qp-list">
-      <li>نقشه خالی است؟ به کانتینر ارتفاع بدهید (مثلاً <code dir="ltr">480px</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
+      <li>نقشه خالی است؟ به کامپوننت ارتفاع بدهید (مثلاً <code dir="ltr">style={{ height: 480 }}</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
       <li>کدام نسخه maplibre؟ نسخه ۶؛ چون peer dependency است باید جدا نصب شود.</li>
-      <li>در React نقشه خراب می‌شود؟ <code dir="ltr">destroy</code> را در cleanup تابع <code dir="ltr">useEffect</code> صدا بزنید (کامپوننت <code dir="ltr">LocationPickerView</code> خودش این کار را می‌کند).</li>
+      <li>در Next.js App Router؟ کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</li>
       <li>رایگان است؟ بله، قم‌پیک کاملاً متن‌باز و رایگان است.</li></ul></section>
       <div class="qp-modal-row"><button class="qp-cta qp-back" type="button">${this.t('backToMap')}</button></div>
     </div></div>`;

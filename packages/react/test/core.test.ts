@@ -16,7 +16,7 @@ describe('mergeOptions', () => {
 
 describe('labels/dir', () => {
   it('fa only, always rtl', () => {
-    expect(mergeOptions({ container: '#qp' }).i18n.labels.searchTitle).toBe(FA_LABELS.searchTitle);
+    expect(mergeOptions({ container: '#qp' }).i18n.labels?.searchTitle).toBe(FA_LABELS.searchTitle);
     expect(resolveLabels().close).toBe(FA_LABELS.close);
     expect(resolveDir()).toBe('rtl');
   });
