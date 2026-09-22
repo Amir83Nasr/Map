@@ -34,7 +34,6 @@ export interface MapOption {
 
 export interface ControlsOption {
   gps?: boolean;
-  zoom?: boolean;
   confirmButton?: boolean;
   searchTrigger?: boolean;
   developers?: boolean;

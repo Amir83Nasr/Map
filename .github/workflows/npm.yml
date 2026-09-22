@@ -26,6 +26,5 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm test
-      - run: pnpm --filter qompick-core build && pnpm --filter qompick-react build
-      - run: pnpm --filter qompick-core publish --provenance --access public --no-git-checks
+      - run: pnpm --filter qompick-react build
       - run: pnpm --filter qompick-react publish --provenance --access public --no-git-checks

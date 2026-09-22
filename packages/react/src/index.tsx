@@ -2,62 +2,18 @@
 import './styles.css';
 import { useEffect, useRef } from 'react';
 import { LocationPicker } from './picker.js';
-import type { LocationPickerOptions, NominatimResult, PickerLocation } from './types.js';
+import type { LocationPickerOptions } from './types.js';
 
-export interface QomPickProps extends Omit<
-  LocationPickerOptions,
-  | 'container'
-  | 'onLocationChange'
-  | 'onAddressResolved'
-  | 'onSearchResults'
-  | 'onPick'
-  | 'onConfirm'
-  | 'onLocate'
-  | 'onError'
-> {
-  onLocationChange?: (loc: PickerLocation) => void;
-  onAddressResolved?: (loc: PickerLocation) => void;
-  onSearchResults?: (r: NominatimResult[]) => void;
-  onPick?: (loc: PickerLocation) => void;
-  onConfirm?: (loc: PickerLocation) => void;
-  onLocate?: (loc: PickerLocation) => void;
-  onError?: (err: Error) => void;
+/** Public props: engine options minus `container` (React owns the element) + layout. */
+export type QomPickProps = Omit<LocationPickerOptions, 'container'> & {
   className?: string;
   style?: React.CSSProperties;
-}
+};
 
-export function LocationPickerView({
-  onLocationChange,
-  onAddressResolved,
-  onSearchResults,
-  onPick,
-  onConfirm,
-  onLocate,
-  onError,
-  className,
-  style,
-  ...opts
-}: QomPickProps): React.JSX.Element {
+export function LocationPickerView({ className, style, ...opts }: QomPickProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
-  const picker = useRef<LocationPicker | null>(null);
-  const cb = useRef({
-    onLocationChange,
-    onAddressResolved,
-    onSearchResults,
-    onPick,
-    onConfirm,
-    onLocate,
-    onError,
-  });
-  cb.current = {
-    onLocationChange,
-    onAddressResolved,
-    onSearchResults,
-    onPick,
-    onConfirm,
-    onLocate,
-    onError,
-  };
+  const cb = useRef(opts);
+  cb.current = opts;
   useEffect(() => {
     if (!ref.current) return;
     const p = new LocationPicker({
@@ -71,11 +27,7 @@ export function LocationPickerView({
       onLocate: (l) => cb.current.onLocate?.(l),
       onError: (e) => cb.current.onError?.(e),
     });
-    picker.current = p;
-    return () => {
-      p.destroy();
-      picker.current = null;
-    };
+    return () => p.destroy();
   }, []);
   return <div ref={ref} className={className} style={{ height: 480, ...style }} />;
 }

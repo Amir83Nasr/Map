@@ -26,51 +26,47 @@ import { LocationPickerView } from 'qompick-react';
 <LocationPickerView
   search={{ suggestions: [{ name: '...', addr: '...', lat: 34.64, lng: 50.87 }] }}
   markers={[{ name: 'Venue', lat: 34.63, lng: 50.87 }]}
-  theme={{ brand: '#16a34a' }}
   onConfirm={(loc) => console.log(loc.lat, loc.lng, loc.address)}
 />;
 ```
 
-The component calls `destroy()` in its own `useEffect` cleanup — no manual teardown needed. Give it a height (default `480px` via `style`); without one the map renders empty.
+The component calls `destroy()` in its own `useEffect` cleanup — no manual init/destroy. Give it a height (default `480px` via `style`); without one the map renders empty.
+
+Public surface: one component (`LocationPickerView`), its props type (`QomPickProps`), and exported types. The engine class stays internal.
 
 ## Config reference
 
-Props of `LocationPickerView` (callbacks are props; the underlying engine is internal):
+Props of `LocationPickerView` (`QomPickProps` = engine options minus `container`, plus `className`/`style`; callbacks are props):
 
-| Key                                      | Type                                                                                            | Default                      | Notes                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------- |
-| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14   | —                                                     |
-| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap style | custom basemap                                        |
-| `map.glyphs`                             | string                                                                                          | OpenFreeMap fonts            | self-host Persian PBFs to override                    |
-| `marker`                                 | `{type, element, className, color, size}`                                                       | `default`                    | `none` hides pin, `html` mounts custom el             |
-| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers   | `developers` opens the in-map developer docs          |
-| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                          | `3 / 600ms / 5`              | Nominatim, Qom viewbox                                |
-| `sheet`                                  | `{enabled, desktopSidebar}`                                                                     | true                         | —                                                     |
-| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `600/350/900/15/18`          | snap waits longer than settle; pinch-zoom never snaps |
-| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                   | generic pins, demo enables Qom data                   |
-| `i18n`                                   | `{dir, locale, labels}`                                                                         | `rtl/fa`                     | full label override                                   |
-| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                            | props                                                 |
-| `className/style`                        | —                                                                                               | height `480`                 | pass a height, otherwise the map is empty             |
+| Key                                      | Type                                                                                            | Default                    | Notes                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------- |
+| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14 | —                                                     |
+| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap     | vector style only (never raster)                      |
+| `map.glyphs`                             | string                                                                                          | OpenFreeMap fonts          | self-host Persian PBFs to override                    |
+| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers | `developers` opens the in-map developer docs          |
+| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                          | `3 / 350ms / 5`            | Nominatim, Qom viewbox                                |
+| `sheet`                                  | `{enabled, desktopSidebar}`                                                                     | true                       | —                                                     |
+| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`        | snap waits longer than settle; pinch-zoom never snaps |
+| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                 | generic pins, demo enables Qom data                   |
+| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL | full label override                                   |
+| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                          | props                                                 |
+| `className/style`                        | —                                                                                               | height `480`               | pass a height, otherwise the map is empty             |
 
-Props also accept `theme` (`{ brand, ink, fontFamily }` → `--qp-*` CSS vars).
+Types (`PickerLocation`, `Venue`, `SearchSuggestion`, `QomPickProps`, …) are re-exported from `qompick-react`.
 
-Types (`PickerLocation`, `LocationPickerOptions`, `Venue`, …) are re-exported from `qompick-react`.
+## Appearance (CSS variables)
 
-## Theme
+No theme prop — scope your own vars under `.qp`:
 
-```tsx
-<LocationPickerView theme={{ brand: '#16a34a', ink: '#111' }} />
+```css
+.qp {
+  --qp-brand: #16a34a;
+  --qp-ink: #111;
+  --qp-radius: 16px;
+}
 ```
 
 Vars: `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. All UI scoped under `.qp-`.
-
-## Marker
-
-```tsx
-marker={{ type: 'default', color: '#e11d48', size: 40 }} // recolor/resize
-marker={{ type: 'none' }}                                // hide pin
-marker={{ type: 'html', element: myEl }}                 // fully custom
-```
 
 ## Map style
 
@@ -79,13 +75,28 @@ marker={{ type: 'html', element: myEl }}                 // fully custom
 <LocationPickerView map={{ glyphs: '/fonts/{fontstack}/{range}.pbf' }} /> // self-hosted Persian glyphs
 ```
 
+Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not supported.
+
 ## i18n / RTL
 
-`i18n: { locale: 'en', dir: 'ltr', labels: { confirm: 'OK' } }`. Persian defaults built in; `dir: 'auto'` follows the fa default (rtl).
+`i18n: { labels: { confirm: 'OK' } }` overrides any label. Persian defaults built in; layout is always RTL.
 
 ## In-map developer docs
 
-Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map: intro, install, React quick start, key settings, appearance, two copyable prompts (new project / existing project), and FAQ.
+Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ.
+
+## Project structure
+
+```text
+packages/react/          # npm package `qompick-react`
+  src/index.tsx          # public: LocationPickerView + types
+  src/picker.ts          # internal engine (not exported)
+  src/*.ts               # helpers (geocode, snap, format, i18n, …)
+  src/styles.css         # ships as dist/qompick-react.css
+  test/helpers.test.ts   # vitest
+demo/                    # Vite demo (vector map, port 5500)
+docs/                    # ARCHITECTURE.md + CHANGELOG.md
+```
 
 ## Scripts
 

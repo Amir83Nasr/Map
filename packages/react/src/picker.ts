@@ -530,7 +530,7 @@ export class LocationPicker {
   private devDocsHtml(): string {
     return `<div class="qp-docs" hidden><div class="qp-docs-card">
       <div class="qp-modal-head"><h2>${this.t('developers')}</h2><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div>
-      <section><h3>معرفی</h3><p>قم‌پیک (qompick-react) نقشه انتخاب موقعیت روی MapLibre برای React است؛ کاملاً متن‌باز و رایگان. جستجوی آدرس، پین وسط نقشه، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست دارد.</p></section>
+      <section><h3>معرفی</h3><p>قم‌پیک (qompick-react) نقشه انتخاب موقعیت روی MapLibre برای React است؛ کاملاً متن‌باز و رایگان. فقط نسخه React دارد (کلاس vanilla در exports نیست؛ engine داخلی است). نقشه پیش‌فرض همیشه VECTOR است (نه raster)، با جستجوی آدرس، پین وسط، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست.</p></section>
       <section><h3>نصب</h3><pre dir="ltr">pnpm add qompick-react maplibre-gl</pre>
       <p class="qp-note">نکته: maplibre-gl نسخه ۶ و react/react-dom peer dependency هستند و باید جدا نصب شوند.</p>
       <pre dir="ltr">npm i qompick-react maplibre-gl
@@ -543,20 +543,29 @@ import { LocationPickerView } from 'qompick-react';
   search={{ suggestions: [] }}
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre>
-      <p class="qp-note">نکته: کامپوننت خودش destroy را در cleanup صدا می‌زند.</p>
+      <p class="qp-note">نکته: کامپوننت خودش init و destroy را در lifecycle (useEffect) انجام می‌دهد — بدون init/destroy دستی.</p>
       <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
       <section><h3>تنظیمات مهم</h3><ul class="qp-list">
-      <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی (<code dir="ltr">style</code>).</li>
+      <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی برداری (<code dir="ltr">style</code>).</li>
       <li><code dir="ltr">search</code> — جستجو و پیشنهادها: <code dir="ltr">enabled / suggestions / minLength / debounceMs / limit</code>.</li>
       <li><code dir="ltr">markers</code> — مارکر مکان‌ها با <code dir="ltr">name / lat / lng</code>.</li>
       <li><code dir="ltr">controls</code> — دکمه‌ها: <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>
-      <li><code dir="ltr">i18n.labels</code> — متن‌ها و زبان؛ پیش‌فرض فارسی راست‌چین.</li></ul>
+      <li><code dir="ltr">behavior</code> — رفتار: <code dir="ltr">snapToRoad / resolveOnMove / resolveDelayMs / settleDelayMs / snapDelayMs / pickZoom / locateZoom</code>.</li>
+      <li><code dir="ltr">i18n.labels</code> — متن‌ها؛ پیش‌فرض فارسی راست‌چین.</li>
+      <li>callbackها: <code dir="ltr">onLocationChange / onAddressResolved / onSearchResults / onPick / onConfirm / onLocate / onError</code>.</li></ul>
       <pre dir="ltr">&lt;LocationPickerView
   map={{ center: { lat: 34.64, lng: 50.87 }, zoom: 15 }}
   search={{ minLength: 3, limit: 5 }}
   controls={{ gps: true, developers: true }}
+  onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre></section>
-      <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. رنگ و فونت را با متغیرهای CSS عوض کنید، مثلاً:</p>
+      <section><h3>ساختار پروژه</h3><ul class="qp-list">
+      <li><code dir="ltr">packages/react/src/index.tsx</code> — API عمومی: کامپوننت <code dir="ltr">LocationPickerView</code> + تایپ‌ها.</li>
+      <li><code dir="ltr">packages/react/src/picker.ts</code> — engine داخلی (در exports عمومی نیست).</li>
+      <li><code dir="ltr">packages/react/src/*.ts</code> — helperها: geocode، snap، format، i18n، map-style، …</li>
+      <li><code dir="ltr">packages/react/src/styles.css</code> — استایل‌ها؛ خروجی build: <code dir="ltr">qompick-react/styles.css</code>.</li>
+      <li><code dir="ltr">demo/</code> — دموی Vite؛ <code dir="ltr">docs/</code> — ARCHITECTURE و CHANGELOG.</li></ul></section>
+      <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. prop جداگانه theme نیست؛ رنگ و فونت را با متغیرهای CSS عوض کنید:</p>
       <pre dir="ltr">.qp { --qp-brand: #16a34a; --qp-radius: 16px; }</pre></section>
       <section><h3>پرامپت شروع از صفر</h3><div class="qp-prompt">${DEV_PROMPT_ZERO}</div>
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="zero">${this.t('copy')}</button></div></section>

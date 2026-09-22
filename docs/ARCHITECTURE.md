@@ -4,13 +4,15 @@ React-only MapLibre location picker. Persian RTL, mobile-first, **vector tiles o
 
 ## Layout
 
-- `packages/react/src/` — library source (`index.tsx` + engine + helpers + `styles.css`)
-- `packages/react/test/core.test.ts` — vitest (defaults, labels, format, emitter, theme lock, style)
-- `packages/react/` build — Vite lib (`es` + `cjs`), `vite-plugin-dts`, externals: `react`, `react-dom`, `maplibre-gl`
+- `packages/react/src/` — library source: `index.tsx` (public React API) + internal engine + helpers + `styles.css`
+- `packages/react/test/helpers.test.ts` — vitest (defaults, labels, format, emitter, style)
+- `packages/react/` build — Vite lib (`es` + `cjs`), `vite-plugin-dts` (bundled `index.d.ts`), externals: `react`, `react/jsx-runtime`, `react/jsx-dev-runtime`, `react-dom`, `maplibre-gl`
 - `demo/` — Vite demo (`port 5500`, `base: './'`), aliases `qompick-react` → `packages/react/src/index.tsx` for local dev
 - `demo/public/fonts/` — self-hosted IRANYekanX glyph PBFs
 - `demo/src/data.ts` — `QOM_SUGGEST` / `QOM_VENUES` Qom dataset
 - `docs/` — this file + changelog
+
+Public package surface (exports map): `.` → `LocationPickerView` + types; `./styles.css` → `dist/qompick-react.css`. No vanilla/non-React entry; `picker.ts` stays internal.
 
 ## Stack
 
@@ -49,13 +51,13 @@ GPS (`locate`): insecure context opens `.qp-geo` guide directly; success clears 
 
 Confirm: `.qp-confirm` modal prefilled with resolved address, `lat,lng` to 6 decimals; `finishConfirm` emits `confirm` (also calls raw `onConfirm`), toasts `registered + faCoord`.
 
-In-map docs (`controls.developers`): Persian intro/install/quick-start/settings/appearance/FAQ + two copyable LLM prompts (`DEV_PROMPT_ZERO`, `DEV_PROMPT_EXISTING`), clipboard with `execCommand` fallback.
+In-map docs (`controls.developers` → `.qp-docs`): Persian intro/install/quick-start/settings/appearance/structure/FAQ + two copyable LLM prompts (`DEV_PROMPT_ZERO`, `DEV_PROMPT_EXISTING`), clipboard with `execCommand` fallback.
 
 Teardown: `destroy()` aborts fetches, clears timers, removes markers + map + root. Escape closes overlay/docs/modals topmost-first.
 
 ## React adapter — `index.tsx` (`LocationPickerView`)
 
-`QomPickProps` = `LocationPickerOptions` minus `container` and callbacks (re-typed as props) plus `className/style`. Creates `LocationPicker` once in `useEffect` with stable callback refs, `destroy()` in cleanup. Default height `480px` via `style`; zero height renders empty map. Re-exports all types.
+`QomPickProps` = `LocationPickerOptions` minus `container`, plus `className/style` (callbacks already come from `PickerCallbacks`). Creates `LocationPicker` once in `useEffect` with stable callback refs, `destroy()` in cleanup. Default height `480px` via `style`; zero height renders empty map. Re-exports all types; does not export the engine.
 
 ## Helpers
 
@@ -70,12 +72,11 @@ Teardown: `destroy()` aborts fetches, clears timers, removes markers + map + roo
 | `emitter.ts`  | tiny typed pub/sub; listener errors swallowed                                                                                                                                |
 | `icons.ts`    | inline lucide-path SVGs (locate/pin/search/star/trophy/x), no icon dep                                                                                                       |
 | `colors.ts`   | basemap palette single source of truth                                                                                                                                       |
-| `theme.ts`    | locked no-ops (`themeVars` → `{}`, `applyTheme` → void); stylesheet defaults win                                                                                             |
 
 ## Styling
 
-`styles.css` (~760 lines), all UI scoped under `.qp`, tokens `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. `theme`/`marker` props documented in README are not implemented — contributors: either implement or fix README before release.
+`styles.css` (~760 lines), all UI scoped under `.qp`, tokens `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. No `theme`/`marker` props — appearance is CSS variables only (README matches).
 
 ## Verification
 
-`pnpm typecheck` (react build → react `tsc --noEmit` → demo `tsc --noEmit`), `pnpm lint`, `pnpm format:check`, `pnpm test` (react vitest), `pnpm build` (react → demo). CI (`.github/workflows`) runs all five, deploys `demo/dist` to Pages.
+`pnpm typecheck` (react build → react `tsc --noEmit` → demo `tsc --noEmit`), `pnpm lint`, `pnpm format:check`, `pnpm test` (react vitest), `pnpm build` (react → demo). CI (`.github/workflows`) runs all five, deploys `demo/dist` to Pages; `npm.yml` publishes only `qompick-react`.

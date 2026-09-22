@@ -1,3 +1,9 @@
 #!/bin/sh
 set -e
+
+# Mirror CI checks — block push on any error or warning.
+pnpm typecheck
+pnpm lint --max-warnings 0
+pnpm format:check
+pnpm test
 pnpm build

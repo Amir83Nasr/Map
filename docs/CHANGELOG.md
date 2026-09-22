@@ -3,9 +3,12 @@
 ## Unreleased
 
 - Collapse `qompick-core` into `packages/react`: engine (`picker`, `map-style`, `geocode`, `snap`, `format`, `i18n`, …) now ships inside `qompick-react`, no `workspace:*` dependency
-- `LocationPickerView` forwards all engine callbacks (`onAddressResolved`, `onSearchResults`, `onPick`, `onLocate`) via stable refs; bundles `styles.css` import
-- Package ships `dist/qompick-react.css` (`style` field, `./styles.css` export, `sideEffects: *.css`); tests move to `packages/react/test` (`vitest`)
-- README rewritten React-only (quick start, props table, dev-docs section); demo aliases `qompick-react` → `packages/react/src` for local dev
+- React-only public surface: `LocationPickerView` + `QomPickProps` (options minus `container`, plus `className`/`style`) + types; engine class not exported; no vanilla API
+- `LocationPickerView` forwards all engine callbacks via stable refs; owns init/`destroy` in `useEffect`
+- Package ships `dist/qompick-react.css` (`style` field, `./styles.css` export, `sideEffects: **/*.css`); `react/jsx-runtime` + `react/jsx-dev-runtime` externalized; bundled `index.d.ts` via `rollupTypes`
+- Remove dead code: `theme.ts` no-op shims, unused `controls.zoom` flag; test file → `test/helpers.test.ts`
+- Fix npm publish workflow (drop `qompick-core`); README / in-map `.qp-docs` / `docs/ARCHITECTURE.md` aligned with real API (no `theme`/`marker` props; correct defaults; vector-only note)
+- Demo aliases `qompick-react` → `packages/react/src` for local dev; docs live in `docs/`
 
 ## 2026-09-22
 
@@ -24,5 +27,4 @@
 
 ## Notes
 
-- Known doc/code gap: README documents `theme` and `marker` props that are not implemented (theme locked to no-ops, pin always default). Either implement or correct README before publish.
 - Versioning: semver, currently `1.0.0`.

@@ -10,7 +10,9 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: (f) => (f === 'es' ? 'qompick-react.js' : 'qompick-react.cjs'),
     },
-    rollupOptions: { external: ['react', 'react-dom', 'maplibre-gl'] },
+    rollupOptions: {
+      external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'maplibre-gl'],
+    },
     cssCodeSplit: false,
   },
 });

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { Emitter } from '../src/emitter.js';
 import { mergeOptions, resolveDir, resolveLabels } from '../src/defaults.js';
 import { enDigits, faStr, isValidLatLng, shortAddr } from '../src/format.js';
-import { applyTheme, themeVars } from '../src/theme.js';
 import { FA_LABELS } from '../src/i18n.js';
 import { MAP_STYLE } from '../src/map-style.js';
 
@@ -49,13 +48,6 @@ describe('emitter', () => {
     off();
     e.emit('ready');
     expect(n).toBe(1);
-  });
-});
-
-describe('theme', () => {
-  it('locked: no vars, no-op apply', () => {
-    expect(themeVars()).toEqual({});
-    expect(applyTheme()).toBeUndefined();
   });
 });
 
