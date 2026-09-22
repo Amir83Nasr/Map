@@ -11,8 +11,8 @@ pnpm add qompick-react maplibre-gl
 `maplibre-gl` v6, `react`/`react-dom` are peer dependencies and must be installed separately.
 
 ```ts
-import 'maplibre-gl/dist/maplibre-gl.css';
-import 'qompick-react/styles.css';
+import 'qompick-react/styles.css'; // includes MapLibre CSS
+import { LocationPickerView } from 'qompick-react';
 ```
 
 ## Quick start — React / Next.js
@@ -83,7 +83,7 @@ Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not su
 
 ## In-map developer docs
 
-Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ.
+Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ (empty map, gray background / missing MapLibre worker, maplibre v6 peer, Next.js).
 
 ## Project structure
 
@@ -94,7 +94,7 @@ packages/react/          # npm package `qompick-react`
   src/*.ts               # helpers (geocode, snap, format, i18n, …)
   src/styles.css         # ships as dist/qompick-react.css
   test/helpers.test.ts   # vitest
-demo/                    # Vite demo (vector map, port 5500)
+demo/                    # Vite demo (vector map, port 5500); ships MapLibre worker files into dist
 docs/                    # ARCHITECTURE.md + CHANGELOG.md
 ```
 
@@ -123,3 +123,4 @@ Versioning: semver, `1.0.0`.
 - Snap-to-road is pixel-space on rendered roads (zoom >= 15), not routable — use OSRM/Valhalla `nearest` for true routing.
 - Single Persian Regular glyph weight; no bold PBFs bundled.
 - One picker per container; module-level worker URL shared across instances.
+- When you bundle `maplibre-gl` yourself (Vite/webpack production build), ship `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` next to the main JS chunk (or call `setWorkerUrl()` before mount). Missing worker → tile worker 404 → gray background. Demo build does this via `demo/vite.config.ts` (`maplibre-worker-assets`).

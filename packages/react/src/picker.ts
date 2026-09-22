@@ -21,7 +21,7 @@ const DEV_PROMPT_ZERO =
   'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده و فقط نسخه React دارد. ' +
   'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
   '۱) نصب — دستور نصب qompick-react و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)؛ ' +
-  '۲) راه‌اندازی پایه — ایمپورت maplibre-gl/dist/maplibre-gl.css و qompick-react/styles.css، رندر کامپوننت LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) و center و zoom اولیه؛ ' +
+  '۲) راه‌اندازی پایه — ایمپورت qompick-react/styles.css (شامل CSS مپ‌لایبر، فقط یک import CSS) و رندر کامپوننت LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) و center و zoom اولیه؛ ' +
   '۳) جستجو — فعال‌سازی search و دادن suggestions اولیه با فیلدهای name و addr و lat و lng؛ ' +
   '۴) مارکرها — نمایش مارکر مکان‌ها با markers؛ ' +
   '۵) دریافت نتیجه — گرفتن مختصات و آدرس تاییدشده کاربر با onConfirm؛ ' +
@@ -34,7 +34,7 @@ const DEV_PROMPT_EXISTING =
   'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده و فقط نسخه React دارد. ' +
   'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
   '۱) نصب — دستور نصب qompick-react و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)، با توجه به این‌که بقیه dependencyهای پروژه نباید به‌هم بخورد؛ ' +
-  '۲) ایمپورت cssها — اضافه کردن maplibre-gl/dist/maplibre-gl.css و qompick-react/styles.css طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
+  '۲) ایمپورت css — اضافه کردن qompick-react/styles.css (شامل CSS مپ‌لایبر؛ فقط یک import CSS) طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
   '۳) کانتینر — رندر LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) در جای مناسب صفحه فعلی؛ ' +
   '۴) اتصال — دادن center و zoom، اضافه کردن search با suggestions، نمایش markers، و گرفتن مختصات و آدرس تاییدشده با onConfirm؛ ' +
   '۵) پاک‌سازی — کامپوننت LocationPickerView خودش destroy را در cleanup صدا می‌زند. ' +
@@ -535,14 +535,14 @@ export class LocationPicker {
       <p class="qp-note">نکته: maplibre-gl نسخه ۶ و react/react-dom peer dependency هستند و باید جدا نصب شوند.</p>
       <pre dir="ltr">npm i qompick-react maplibre-gl
 yarn add qompick-react maplibre-gl</pre></section>
-      <section><h3>شروع سریع (React)</h3><pre dir="ltr">import 'maplibre-gl/dist/maplibre-gl.css';
-import 'qompick-react/styles.css';
+      <section><h3>شروع سریع (React)</h3><pre dir="ltr">import 'qompick-react/styles.css';
 import { LocationPickerView } from 'qompick-react';
 
 &lt;LocationPickerView
   search={{ suggestions: [] }}
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre>
+      <p class="qp-note">نکته: CSS مپ‌لایبر داخل <code dir="ltr">qompick-react/styles.css</code> بسته‌بندی شده — فقط همین یک import CSS کافی است.</p>
       <p class="qp-note">نکته: کامپوننت خودش init و destroy را در lifecycle (useEffect) انجام می‌دهد — بدون init/destroy دستی.</p>
       <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
       <section><h3>تنظیمات مهم</h3><ul class="qp-list">
@@ -573,6 +573,7 @@ import { LocationPickerView } from 'qompick-react';
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="existing">${this.t('copy')}</button></div></section>
       <section><h3>سوالات پرتکرار</h3><ul class="qp-list">
       <li>نقشه خالی است؟ به کامپوننت ارتفاع بدهید (مثلاً <code dir="ltr">style={{ height: 480 }}</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
+      <li>پس‌زمینه خاکستری و بدون کاشی؟ بعد از بیلد production، <code dir="ltr">maplibre-gl-worker.mjs</code> و <code dir="ltr">maplibre-gl-shared.mjs</code> باید کنار JS اصلی باشند (یا قبل از mount با <code dir="ltr">setWorkerUrl()</code> مسیر worker را بدهید). worker 404 یعنی کاشی‌ها parse نمی‌شوند.</li>
       <li>کدام نسخه maplibre؟ نسخه ۶؛ چون peer dependency است باید جدا نصب شود.</li>
       <li>در Next.js App Router؟ کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</li>
       <li>رایگان است؟ بله، قم‌پیک کاملاً متن‌باز و رایگان است.</li></ul></section>

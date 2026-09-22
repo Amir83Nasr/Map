@@ -7,7 +7,7 @@ React-only MapLibre location picker. Persian RTL, mobile-first, **vector tiles o
 - `packages/react/src/` — library source: `index.tsx` (public React API) + internal engine + helpers + `styles.css`
 - `packages/react/test/helpers.test.ts` — vitest (defaults, labels, format, emitter, style)
 - `packages/react/` build — Vite lib (`es` + `cjs`), `vite-plugin-dts` (bundled `index.d.ts`), externals: `react`, `react/jsx-runtime`, `react/jsx-dev-runtime`, `react-dom`, `maplibre-gl`
-- `demo/` — Vite demo (`port 5500`, `base: './'`), aliases `qompick-react` → `packages/react/src/index.tsx` for local dev
+- `demo/` — Vite demo (`port 5500`, `base: './'`), aliases `qompick-react` → `packages/react/src/index.tsx` for local dev; `maplibre-worker-assets` plugin copies `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` into `dist/` and `dist/assets/` next to the main chunk (MapLibre resolves the worker via `import.meta.url` sibling; missing worker → 404 → gray map)
 - `demo/public/fonts/` — self-hosted IRANYekanX glyph PBFs
 - `demo/src/data.ts` — `QOM_SUGGEST` / `QOM_VENUES` Qom dataset
 - `docs/` — this file + changelog
@@ -75,7 +75,7 @@ Teardown: `destroy()` aborts fetches, clears timers, removes markers + map + roo
 
 ## Styling
 
-`styles.css` (~760 lines), all UI scoped under `.qp`, tokens `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. No `theme`/`marker` props — appearance is CSS variables only (README matches).
+`styles.css` (~760 lines), first line `@import 'maplibre-gl/dist/maplibre-gl.css'` so `dist/qompick-react.css` ships MapLibre + UI CSS together — consumers need a single `import 'qompick-react/styles.css'` (no separate MapLibre CSS import). All UI scoped under `.qp`, tokens `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. No `theme`/`marker` props — appearance is CSS variables only (README matches).
 
 ## Verification
 

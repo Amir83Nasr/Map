@@ -1,4 +1,3 @@
-import 'maplibre-gl/dist/maplibre-gl.css';
 import 'qompick-react/styles.css';
 import './app.css';
 import { createRoot } from 'react-dom/client';

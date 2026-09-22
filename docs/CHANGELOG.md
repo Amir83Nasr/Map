@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix Pages gray map: demo Vite plugin ships `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` next to main JS (`import.meta.url` sibling resolution); missing worker was 404 → no tiles
+- Simplify setup to one CSS import: `styles.css` `@import`s `maplibre-gl/dist/maplibre-gl.css`, so `dist/qompick-react.css` ships MapLibre + UI CSS; usage = `import 'qompick-react/styles.css'` + `LocationPickerView`
 - Collapse `qompick-core` into `packages/react`: engine (`picker`, `map-style`, `geocode`, `snap`, `format`, `i18n`, …) now ships inside `qompick-react`, no `workspace:*` dependency
 - React-only public surface: `LocationPickerView` + `QomPickProps` (options minus `container`, plus `className`/`style`) + types; engine class not exported; no vanilla API
 - `LocationPickerView` forwards all engine callbacks via stable refs; owns init/`destroy` in `useEffect`
