@@ -9,6 +9,7 @@ function Site(): React.JSX.Element {
     <main className="demo">
       <LocationPickerView
         controls={{ developers: true }}
+        map={{ glyphs: 'fonts/{fontstack}/{range}.pbf' }}
         search={{ suggestions: QOM_SUGGEST }}
         markers={QOM_VENUES}
         style={{ height: '100%' }}

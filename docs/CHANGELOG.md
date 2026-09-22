@@ -1,7 +1,9 @@
 # Changelog — qompick-react
 
-## Unreleased
+## 2026-09-23
 
+- Ship IRANYekanX by default in the package (demo parity): `@font-face` woff2 inlined into `dist/qompick-react.css`, and map `glyphs` default → `https://cdn.jsdelivr.net/npm/qompick-react@1/fonts/{fontstack}/{range}.pbf` (256 PBFs published via `files: dist, fonts`) — consumers get Persian UI font + map labels with zero setup; version `1.0.1`
+- Demo keeps its local glyphs via `map.glyphs: 'fonts/{fontstack}/{range}.pbf'` and drops its own `@font-face` (package CSS provides it)
 - Fix Pages gray map: demo Vite plugin ships `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` next to main JS (`import.meta.url` sibling resolution); missing worker was 404 → no tiles
 - Simplify setup to one CSS import: `styles.css` `@import`s `maplibre-gl/dist/maplibre-gl.css`, so `dist/qompick-react.css` ships MapLibre + UI CSS; usage = `import 'qompick-react/styles.css'` + `LocationPickerView`
 - Collapse `qompick-core` into `packages/react`: engine (`picker`, `map-style`, `geocode`, `snap`, `format`, `i18n`, …) now ships inside `qompick-react`, no `workspace:*` dependency
@@ -29,4 +31,4 @@
 
 ## Notes
 
-- Versioning: semver, currently `1.0.0`.
+- Versioning: semver, currently `1.0.1`.

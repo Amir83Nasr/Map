@@ -1,6 +1,6 @@
 {
   "name": "qompick-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React location picker on MapLibre (Persian RTL, mobile-first, vector tiles)",
   "type": "module",
   "sideEffects": [
@@ -20,7 +20,8 @@
   "types": "./dist/index.d.ts",
   "style": "./dist/qompick-react.css",
   "files": [
-    "dist"
+    "dist",
+    "fonts"
   ],
   "peerDependencies": {
     "maplibre-gl": "^6.10.0",

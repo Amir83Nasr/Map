@@ -14,5 +14,7 @@ export default defineConfig({
       external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'maplibre-gl'],
     },
     cssCodeSplit: false,
+    // Inline the IRANYekanX woff2 (<100kB) into styles.css — one self-contained CSS file.
+    assetsInlineLimit: 100_000,
   },
 });

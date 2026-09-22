@@ -38,19 +38,19 @@ Public surface: one component (`LocationPickerView`), its props type (`QomPickPr
 
 Props of `LocationPickerView` (`QomPickProps` = engine options minus `container`, plus `className`/`style`; callbacks are props):
 
-| Key                                      | Type                                                                                            | Default                    | Notes                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------- |
-| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14 | —                                                     |
-| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap     | vector style only (never raster)                      |
-| `map.glyphs`                             | string                                                                                          | OpenFreeMap fonts          | self-host Persian PBFs to override                    |
-| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers | `developers` opens the in-map developer docs          |
-| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                          | `3 / 350ms / 5`            | Nominatim, Qom viewbox                                |
-| `sheet`                                  | `{enabled, desktopSidebar}`                                                                     | true                       | —                                                     |
-| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`        | snap waits longer than settle; pinch-zoom never snaps |
-| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                 | generic pins, demo enables Qom data                   |
-| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL | full label override                                   |
-| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                          | props                                                 |
-| `className/style`                        | —                                                                                               | height `480`               | pass a height, otherwise the map is empty             |
+| Key                                      | Type                                                                                            | Default                                | Notes                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14             | —                                                                       |
+| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap                 | vector style only (never raster)                                        |
+| `map.glyphs`                             | string                                                                                          | jsDelivr CDN (bundled IRANYekanX PBFs) | relative paths resolve against page base; self-host by copying `fonts/` |
+| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers             | `developers` opens the in-map developer docs                            |
+| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                          | `3 / 350ms / 5`                        | Nominatim, Qom viewbox                                                  |
+| `sheet`                                  | `{enabled, desktopSidebar}`                                                                     | true                                   | —                                                                       |
+| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`                    | snap waits longer than settle; pinch-zoom never snaps                   |
+| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                             | generic pins, demo enables Qom data                                     |
+| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL             | full label override                                                     |
+| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                                      | props                                                                   |
+| `className/style`                        | —                                                                                               | height `480`                           | pass a height, otherwise the map is empty                               |
 
 Types (`PickerLocation`, `Venue`, `SearchSuggestion`, `QomPickProps`, …) are re-exported from `qompick-react`.
 
@@ -68,6 +68,8 @@ No theme prop — scope your own vars under `.qp`:
 
 Vars: `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. All UI scoped under `.qp-`.
 
+IRANYekanX ships inside the package: `styles.css` carries the `@font-face` (woff2 inlined as a data URI), so the Persian UI font works with the same single CSS import — no font setup.
+
 ## Map style
 
 ```tsx
@@ -75,7 +77,7 @@ Vars: `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-lin
 <LocationPickerView map={{ glyphs: '/fonts/{fontstack}/{range}.pbf' }} /> // self-hosted Persian glyphs
 ```
 
-Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not supported.
+Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not supported. Default `map.glyphs` points at the IRANYekanX PBFs published with this package (jsDelivr), so Persian map labels work with zero setup; pass `map.glyphs` to self-host them.
 
 ## i18n / RTL
 
@@ -83,7 +85,7 @@ Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not su
 
 ## In-map developer docs
 
-Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ (empty map, gray background / missing MapLibre worker, maplibre v6 peer, Next.js).
+Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ (empty map, missing Persian map labels / glyphs, gray background / missing MapLibre worker, maplibre v6 peer, Next.js).
 
 ## Project structure
 
@@ -92,7 +94,8 @@ packages/react/          # npm package `qompick-react`
   src/index.tsx          # public: LocationPickerView + types
   src/picker.ts          # internal engine (not exported)
   src/*.ts               # helpers (geocode, snap, format, i18n, …)
-  src/styles.css         # ships as dist/qompick-react.css
+  src/styles.css         # ships as dist/qompick-react.css (+ inlined IRANYekanX @font-face)
+  fonts/                 # IRANYekanX woff2 + map glyph PBFs (published in the tarball)
   test/helpers.test.ts   # vitest
 demo/                    # Vite demo (vector map, port 5500); ships MapLibre worker files into dist
 docs/                    # ARCHITECTURE.md + CHANGELOG.md
@@ -115,7 +118,7 @@ cd packages/react && pnpm build && pnpm pack --dry-run  # inspect tarball
 pnpm publish --filter qompick-react --access public
 ```
 
-Versioning: semver, `1.0.0`.
+Versioning: semver, currently `1.0.1`.
 
 ## Limitations
 

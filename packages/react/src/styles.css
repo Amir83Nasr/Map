@@ -1,5 +1,14 @@
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
+/* IRANYekanX ships with the package (url resolved at build: inlined or emitted). */
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('../fonts/IRANYekanX-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── QOMPICK TOKENS ── */
 .qp {
   --qp-bg: #f5f5f5;

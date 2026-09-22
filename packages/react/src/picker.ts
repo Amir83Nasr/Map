@@ -543,6 +543,7 @@ import { LocationPickerView } from 'qompick-react';
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre>
       <p class="qp-note">نکته: CSS مپ‌لایبر داخل <code dir="ltr">qompick-react/styles.css</code> بسته‌بندی شده — فقط همین یک import CSS کافی است.</p>
+      <p class="qp-note">نکته: فونت فارسی IRANYekanX داخل خود پکیج است (با همین import CSS لود می‌شود) و لیبل‌های فارسی نقشه هم از PBFهای داخل پکیج می‌آیند — بدون تنظیم اضافه.</p>
       <p class="qp-note">نکته: کامپوننت خودش init و destroy را در lifecycle (useEffect) انجام می‌دهد — بدون init/destroy دستی.</p>
       <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
       <section><h3>تنظیمات مهم</h3><ul class="qp-list">
@@ -564,6 +565,7 @@ import { LocationPickerView } from 'qompick-react';
       <li><code dir="ltr">packages/react/src/picker.ts</code> — engine داخلی (در exports عمومی نیست).</li>
       <li><code dir="ltr">packages/react/src/*.ts</code> — helperها: geocode، snap، format، i18n، map-style، …</li>
       <li><code dir="ltr">packages/react/src/styles.css</code> — استایل‌ها؛ خروجی build: <code dir="ltr">qompick-react/styles.css</code>.</li>
+      <li><code dir="ltr">packages/react/fonts/</code> — فونت IRANYekanX (woff2) و PBFهای glyph نقشه؛ داخل tarball منتشر می‌شود.</li>
       <li><code dir="ltr">demo/</code> — دموی Vite؛ <code dir="ltr">docs/</code> — ARCHITECTURE و CHANGELOG.</li></ul></section>
       <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. prop جداگانه theme نیست؛ رنگ و فونت را با متغیرهای CSS عوض کنید:</p>
       <pre dir="ltr">.qp { --qp-brand: #16a34a; --qp-radius: 16px; }</pre></section>
@@ -573,6 +575,7 @@ import { LocationPickerView } from 'qompick-react';
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="existing">${this.t('copy')}</button></div></section>
       <section><h3>سوالات پرتکرار</h3><ul class="qp-list">
       <li>نقشه خالی است؟ به کامپوننت ارتفاع بدهید (مثلاً <code dir="ltr">style={{ height: 480 }}</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
+      <li>لیبل‌های فارسی نقشه نمایش داده نمی‌شود؟ glyphهای پیش‌فرض از CDN پکیج می‌آیند؛ برای self-host کردن، <code dir="ltr">map.glyphs</code> را به مسیر فونت‌های پکیج (مثلاً <code dir="ltr">/fonts/{fontstack}/{range}.pbf</code> بعد از کپی <code dir="ltr">node_modules/qompick-react/fonts</code>) تنظیم کنید.</li>
       <li>پس‌زمینه خاکستری و بدون کاشی؟ بعد از بیلد production، <code dir="ltr">maplibre-gl-worker.mjs</code> و <code dir="ltr">maplibre-gl-shared.mjs</code> باید کنار JS اصلی باشند (یا قبل از mount با <code dir="ltr">setWorkerUrl()</code> مسیر worker را بدهید). worker 404 یعنی کاشی‌ها parse نمی‌شوند.</li>
       <li>کدام نسخه maplibre؟ نسخه ۶؛ چون peer dependency است باید جدا نصب شود.</li>
       <li>در Next.js App Router؟ کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</li>

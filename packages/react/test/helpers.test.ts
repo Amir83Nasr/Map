@@ -52,10 +52,12 @@ describe('emitter', () => {
 });
 
 describe('map style', () => {
-  it('vector default keeps local glyphs + sprite', () => {
+  it('vector default: CDN glyphs (shipped PBFs) + openfreemap sprite', () => {
     const v = MAP_STYLE as unknown as Record<string, unknown>;
     expect(v['version']).toBe(8);
-    expect(v['glyphs']).toContain('fonts/{fontstack}/{range}.pbf');
+    expect(v['glyphs']).toBe(
+      'https://cdn.jsdelivr.net/npm/qompick-react@1/fonts/{fontstack}/{range}.pbf',
+    );
     expect(v['sprite']).toContain('openfreemap');
   });
 });

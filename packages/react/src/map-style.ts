@@ -32,8 +32,10 @@ import {
 // Source: OpenFreeMap planet tiles (no API key).
 // Expressions use ["coalesce", name:fa, name:nonlatin, name, name:latin]
 // so Persian labels win; tiles carry Persian mostly in name:nonlatin.
-// Glyphs are self-hosted IRANYekanX PBFs (public/fonts/), generated with:
-//   fontnik build-glyphs IRANYekanX-Regular.ttf public/fonts/
+// Glyphs are IRANYekanX PBFs shipped in the npm package (fonts/), served by
+// default from jsDelivr; the demo overrides map.glyphs with its local copy.
+// Generated with:
+//   fontnik build-glyphs IRANYekanX-Regular.ttf fonts/
 // (convert the repo's woff2 to TTF first: python3 -c
 // "from fontTools.ttLib import TTFont; f=TTFont('IRANYekanX-Regular.woff2');
 // f.flavor=None; f.save('IRANYekanX-Regular.ttf')").
@@ -1038,10 +1040,11 @@ export const OPENFREEMAP_TILEJSON_URL = 'https://tiles.openfreemap.org/planet';
 export const MAP_STYLE = {
   version: 8,
   name: 'snapp-like',
-  // Relative on purpose: core is prebuilt with BASE_URL='/', so an absolute
-  // '/fonts/...' breaks under a subpath (GitHub Pages '/<repo>/').
-  // Resolved at runtime against document.baseURI in picker initMap.
-  glyphs: `fonts/{fontstack}/{range}.pbf`,
+  // Absolute CDN URL of the PBFs shipped in this package (files: fonts/) —
+  // consumers get Persian map labels with zero setup. A relative template
+  // still works: picker initMap resolves it against document.baseURI
+  // (the demo passes `fonts/{fontstack}/{range}.pbf` for its local copy).
+  glyphs: `https://cdn.jsdelivr.net/npm/qompick-react@1/fonts/{fontstack}/{range}.pbf`,
   sprite: 'https://tiles.openfreemap.org/sprites/ofm_f384/ofm',
   sources: {
     openmaptiles: { type: 'vector', url: OPENFREEMAP_TILEJSON_URL },

@@ -5,10 +5,11 @@ React-only MapLibre location picker. Persian RTL, mobile-first, **vector tiles o
 ## Layout
 
 - `packages/react/src/` — library source: `index.tsx` (public React API) + internal engine + helpers + `styles.css`
+- `packages/react/fonts/` — IRANYekanX woff2 + map glyph PBFs (`IRANYekanX Regular/*.pbf`), published in the npm tarball (`files: dist, fonts`)
 - `packages/react/test/helpers.test.ts` — vitest (defaults, labels, format, emitter, style)
 - `packages/react/` build — Vite lib (`es` + `cjs`), `vite-plugin-dts` (bundled `index.d.ts`), externals: `react`, `react/jsx-runtime`, `react/jsx-dev-runtime`, `react-dom`, `maplibre-gl`
-- `demo/` — Vite demo (`port 5500`, `base: './'`), aliases `qompick-react` → `packages/react/src/index.tsx` for local dev; `maplibre-worker-assets` plugin copies `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` into `dist/` and `dist/assets/` next to the main chunk (MapLibre resolves the worker via `import.meta.url` sibling; missing worker → 404 → gray map)
-- `demo/public/fonts/` — self-hosted IRANYekanX glyph PBFs
+- `demo/` — Vite demo (`port 5500`, `base: './'`), aliases `qompick-react` → `packages/react/src/index.tsx` for local dev; passes `map.glyphs: 'fonts/{fontstack}/{range}.pbf'` so it keeps using its local `demo/public/fonts/` PBFs (default in the package is the jsDelivr CDN); `maplibre-worker-assets` plugin copies `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` into `dist/` and `dist/assets/` next to the main chunk (MapLibre resolves the worker via `import.meta.url` sibling; missing worker → 404 → gray map)
+- `demo/public/fonts/` — local IRANYekanX glyph PBFs for the demo (UI woff2 now comes from the package `@font-face`)
 - `demo/src/data.ts` — `QOM_SUGGEST` / `QOM_VENUES` Qom dataset
 - `docs/` — this file + changelog
 
@@ -23,7 +24,7 @@ Public package surface (exports map): `.` → `LocationPickerView` + types; `./s
 `map-style.ts` exports `MAP_STYLE` (style-spec v8, OpenMapTiles schema, Snapp-like palette from `colors.ts`):
 
 - source: `openmaptiles`, `url: OPENFREEMAP_TILEJSON_URL` (`https://tiles.openfreemap.org/planet`), no API key
-- `glyphs: fonts/{fontstack}/{range}.pbf` — relative on purpose; `picker.ts:initMap` resolves it against `document.baseURI` with plain string join (never `new URL`, which would percent-encode `{fontstack}/{range}`). Breaks under subpaths (GitHub Pages `/<repo>/`) otherwise
+- `glyphs: https://cdn.jsdelivr.net/npm/qompick-react@1/fonts/{fontstack}/{range}.pbf` — absolute CDN URL of the IRANYekanX PBFs shipped in this package, so consumers get Persian labels with zero setup; a relative template is still supported and `picker.ts:initMap` resolves it against `document.baseURI` with plain string join (never `new URL`, which would percent-encode `{fontstack}/{range}`) — the demo passes `fonts/{fontstack}/{range}.pbf` for its local copy under subpaths (GitHub Pages `/<repo>/`)
 - `sprite: https://tiles.openfreemap.org/sprites/ofm_f384/ofm`
 - labels: `coalesce(name:fa, name:nonlatin, name, name:latin)` + digit rewrite to Persian via style-spec expressions
 - custom `map.style` (object or URL) overrides base; custom `map.glyphs` overrides glyph template
@@ -75,7 +76,7 @@ Teardown: `destroy()` aborts fetches, clears timers, removes markers + map + roo
 
 ## Styling
 
-`styles.css` (~760 lines), first line `@import 'maplibre-gl/dist/maplibre-gl.css'` so `dist/qompick-react.css` ships MapLibre + UI CSS together — consumers need a single `import 'qompick-react/styles.css'` (no separate MapLibre CSS import). All UI scoped under `.qp`, tokens `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. No `theme`/`marker` props — appearance is CSS variables only (README matches).
+`styles.css` (~770 lines), first line `@import 'maplibre-gl/dist/maplibre-gl.css'` so `dist/qompick-react.css` ships MapLibre + UI CSS together — consumers need a single `import 'qompick-react/styles.css'` (no separate MapLibre CSS import). It also carries `@font-face` for IRANYekanX (the woff2 from `packages/react/fonts/` is inlined as a data URI via `assetsInlineLimit`), so the default `--qp-font` renders without any font setup. All UI scoped under `.qp`, tokens `--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font`. No `theme`/`marker` props — appearance is CSS variables only (README matches).
 
 ## Verification
 
