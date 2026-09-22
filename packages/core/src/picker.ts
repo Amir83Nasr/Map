@@ -330,13 +330,21 @@ export class LocationPicker {
     const wrap = this.root.querySelector('.qp-map-wrap') as HTMLElement;
     let timer = 0;
     let snapTarget: { lat: number; lng: number } | null = null;
-    this.map.on('movestart', () => wrap.classList.add('is-moving'));
+    let startZoom = this.map.getZoom();
+    let startCenter = this.map.getCenter();
+    this.map.on('movestart', () => {
+      wrap.classList.add('is-moving');
+      // Pending snap dies the moment a new gesture starts — never yank mid-pan.
+      window.clearTimeout(timer);
+      startZoom = this.map.getZoom();
+      startCenter = this.map.getCenter();
+    });
     this.map.on('move', () => {
       const c = this.map.getCenter();
       this.lat = c.lat;
       this.lng = c.lng;
     });
-    this.map.on('moveend', () => {
+    this.map.on('moveend', (e) => {
       wrap.classList.remove('is-moving');
       const c = this.map.getCenter();
       window.clearTimeout(timer);
@@ -348,8 +356,22 @@ export class LocationPicker {
         snapTarget = null;
         return;
       }
+      // Programmatic moves (flyTo/easeTo from pick/locate/snap) never snap.
+      if (!e.originalEvent) {
+        this.setLocation(c.lat, c.lng);
+        return;
+      }
+      // Pinch-zoom didn't move the pin: no snap, settle fast.
+      // ponytail: 10px/1-zoom thresholds are pan-gesture heuristics;
+      // drop in favor of map.touchZoom/cooperative gestures when UX needs it.
+      const movedM = Math.hypot(c.lat - startCenter.lat, c.lng - startCenter.lng) * 111_320;
+      const z = this.map.getZoom();
+      const pinchZoom = Math.abs(z - startZoom) > 1 && movedM < 10;
+      const settleMs = pinchZoom
+        ? 0
+        : (this.opts.behavior.snapDelayMs ?? this.opts.behavior.settleDelayMs);
       timer = window.setTimeout(() => {
-        if (this.opts.behavior.snapToRoad) {
+        if (this.opts.behavior.snapToRoad && !pinchZoom) {
           try {
             const snap = trySnapToRoad(this.map, c.lat, c.lng);
             if (snap) {
@@ -363,7 +385,7 @@ export class LocationPicker {
           }
         }
         this.setLocation(c.lat, c.lng);
-      }, this.opts.behavior.settleDelayMs);
+      }, settleMs);
       this.privateTimers.push(timer);
     });
   }

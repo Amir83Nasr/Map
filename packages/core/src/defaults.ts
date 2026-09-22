@@ -40,6 +40,7 @@ export function mergeOptions(
       resolveOnMove: true,
       resolveDelayMs: 400,
       settleDelayMs: 250,
+      snapDelayMs: 900,
       pickZoom: 14,
       locateZoom: 18,
       ...(o.behavior ?? {}),

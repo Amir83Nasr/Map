@@ -55,6 +55,7 @@ export interface BehaviorOption {
   resolveOnMove?: boolean;
   resolveDelayMs?: number;
   settleDelayMs?: number;
+  snapDelayMs?: number;
   pickZoom?: number;
   locateZoom?: number;
 }

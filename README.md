@@ -48,20 +48,20 @@ import { LocationPickerView } from 'qompick-react';
 
 ## Config reference
 
-| Key                                      | Type                                                                                   | Default                      | Notes                                     |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------- |
-| `container`                              | `HTMLElement \| string`                                                                | required                     | mount node                                |
-| `map.style`                              | URL \| StyleSpecification                                                              | Snapp-like OpenFreeMap style | custom basemap                            |
-| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                      | Qom `34.6416,50.8764`, z14   | —                                         |
-| `map.glyphs`                             | string                                                                                 | OpenFreeMap fonts            | self-host Persian PBFs to override        |
-| `marker`                                 | `{type, element, className, color, size}`                                              | `default`                    | `none` hides pin, `html` mounts custom el |
-| `controls`                               | `{gps, confirmButton, searchTrigger}`                                                  | all true                     | —                                         |
-| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                 | `3 / 600ms / 5`              | Nominatim, Qom viewbox                    |
-| `sheet`                                  | `{enabled, desktopSidebar}`                                                            | true                         | —                                         |
-| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, pickZoom, locateZoom}`     | `600/350/14/18`              | —                                         |
-| `markers`                                | `Venue[]`                                                                              | `[]` (off)                   | generic pins, demo enables Qom data       |
-| `i18n`                                   | `{dir, locale, labels}`                                                                | `rtl/fa`                     | full label override                       |
-| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError` | —                            | props or `on()/off()` events              |
+| Key                                      | Type                                                                                            | Default                      | Notes                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------- |
+| `container`                              | `HTMLElement \| string`                                                                         | required                     | mount node                                            |
+| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap style | custom basemap                                        |
+| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14   | —                                                     |
+| `map.glyphs`                             | string                                                                                          | OpenFreeMap fonts            | self-host Persian PBFs to override                    |
+| `marker`                                 | `{type, element, className, color, size}`                                                       | `default`                    | `none` hides pin, `html` mounts custom el             |
+| `controls`                               | `{gps, confirmButton, searchTrigger}`                                                           | all true                     | —                                                     |
+| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                          | `3 / 600ms / 5`              | Nominatim, Qom viewbox                                |
+| `sheet`                                  | `{enabled, desktopSidebar}`                                                                     | true                         | —                                                     |
+| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `600/350/900/14/18`          | snap waits longer than settle; pinch-zoom never snaps |
+| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                   | generic pins, demo enables Qom data                   |
+| `i18n`                                   | `{dir, locale, labels}`                                                                         | `rtl/fa`                     | full label override                                   |
+| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                            | props or `on()/off()` events                          |
 
 Methods: `setLocation(lat, lng, {moveMap, resolve, zoom})`, `getLocation()`, `locate()`, `confirm(customAddress?)`, `destroy()`, `on/off` (`ready | locationChange | addressResolved | searchResults | pick | confirm | locate | error`).
 
