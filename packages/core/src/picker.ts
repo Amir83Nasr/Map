@@ -36,6 +36,8 @@ export class LocationPicker {
   privateTimers: number[] = [];
   private revSeq = 0;
   private searchSeq = 0;
+  private revAbort: AbortController | null = null;
+  private searchAbort: AbortController | null = null;
   private destroyed = false;
   lat = DEFAULT_CENTER.lat;
   lng = DEFAULT_CENTER.lng;
@@ -99,7 +101,7 @@ export class LocationPicker {
     this.emitter.emit('locationChange', loc);
     if (opts.moveMap && this.map) {
       const zoom = opts.zoom ?? Math.max(this.map.getZoom(), this.opts.behavior.pickZoom ?? 14);
-      this.map.flyTo({ center: [lng, lat], zoom, duration: 800 });
+      this.map.flyTo({ center: [lng, lat], zoom, duration: 450 });
     }
     if (opts.resolve !== false && this.opts.behavior.resolveOnMove !== false)
       this.scheduleResolve(lat, lng);
@@ -152,6 +154,8 @@ export class LocationPicker {
   destroy(): void {
     this.destroyed = true;
     this.privateTimers.forEach((t) => window.clearTimeout(t));
+    this.revAbort?.abort();
+    this.searchAbort?.abort();
     this.venueMarkers.forEach((m) => m.remove());
     this.myMarker?.remove();
     this.map?.remove();
@@ -295,6 +299,13 @@ export class LocationPicker {
       maxZoom: o.map.maxZoom,
       attributionControl: false,
       renderWorldCopies: false,
+      // Faster feel: shorter fades, no pitch/rotate handlers, wider click tolerance.
+      fadeDuration: 100,
+      crossSourceCollisions: false,
+      scrollZoom: { around: 'center' },
+      dragRotate: false,
+      touchPitch: false,
+      clickTolerance: 5,
       maxBounds: [
         [b[0][1], b[0][0]],
         [b[1][1], b[1][0]],
@@ -302,12 +313,18 @@ export class LocationPicker {
     });
     if (!o.map.style) {
       let fellBack = false;
-      this.map.on('error', (e: unknown) => {
+      const onFirstIdle = (): void => {
+        this.map.off('error', onStyleError);
+      };
+      const onStyleError = (e: unknown): void => {
         if (fellBack || this.destroyed) return;
         fellBack = true;
         this.map.setStyle(MAP_STYLE_RASTER as never);
+        this.map.off('idle', onFirstIdle);
         this.fail(e);
-      });
+      };
+      this.map.once('idle', onFirstIdle);
+      this.map.on('error', onStyleError);
     }
     requestAnimationFrame(() => this.map.resize());
     const wrap = this.root.querySelector('.qp-map-wrap') as HTMLElement;
@@ -403,15 +420,18 @@ export class LocationPicker {
   }
 
   private async resolveAddress(lat: number, lng: number): Promise<void> {
+    this.revAbort?.abort();
+    this.revAbort = new AbortController();
     const seq = ++this.revSeq;
     this.resolving = true;
     this.labelEl.textContent = this.t('resolving');
     try {
-      const text = await reverseGeocode(lat, lng);
+      const text = await reverseGeocode(lat, lng, { signal: this.revAbort.signal });
       if (seq !== this.revSeq || this.destroyed) return;
       this.address = shortAddr(text);
       this.emitter.emit('addressResolved', this.getLocation());
     } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
       if (seq !== this.revSeq) return;
       this.address = '';
       this.fail(e);
@@ -545,11 +565,13 @@ export class LocationPicker {
     }
     const t = window.setTimeout(() => {
       if (my === this.searchSeq) run(query);
-    }, this.opts.search.debounceMs ?? 600);
+    }, this.opts.search.debounceMs ?? 350);
     this.privateTimers.push(t);
   }
 
   private async runSearch(q: string): Promise<void> {
+    this.searchAbort?.abort();
+    this.searchAbort = new AbortController();
     const my = ++this.searchSeq;
     const results = this.root.querySelector('.qp-results') as HTMLElement | null;
     const home = this.root.querySelector('.qp-home') as HTMLElement | null;
@@ -557,7 +579,9 @@ export class LocationPicker {
     if (home) home.hidden = true;
     results.innerHTML = `<div class="qp-err">${this.t('searching')}</div>`;
     try {
-      const list = await searchLocation(q, this.opts.search.limit ?? 5);
+      const list = await searchLocation(q, this.opts.search.limit ?? 5, {
+        signal: this.searchAbort.signal,
+      });
       if (my !== this.searchSeq) return;
       this.emitter.emit('searchResults', list);
       if (!list.length) {
@@ -567,6 +591,7 @@ export class LocationPicker {
       results.innerHTML = '';
       for (const it of list) results.appendChild(this.resultRow(it.display_name, it.lat, it.lon));
     } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
       if (my !== this.searchSeq) return;
       results.innerHTML = `<div class="qp-err">${this.t('searchError')}</div>`;
       this.fail(e);
@@ -574,7 +599,11 @@ export class LocationPicker {
   }
 
   private onDeskQuery(q: string): void {
-    this.onQueryShared(q, (v) => this.renderDeskSuggest(v), (v) => void this.runDeskSearch(v));
+    this.onQueryShared(
+      q,
+      (v) => this.renderDeskSuggest(v),
+      (v) => void this.runDeskSearch(v),
+    );
   }
 
   private async runDeskSearch(q: string): Promise<void> {
@@ -592,10 +621,14 @@ export class LocationPicker {
       return;
     }
     const my = ++this.searchSeq;
+    this.searchAbort?.abort();
+    this.searchAbort = new AbortController();
     if (home) home.hidden = true;
     results.innerHTML = `<div class="qp-err">${this.t('searching')}</div>`;
     try {
-      const list = await searchLocation(query, this.opts.search.limit ?? 5);
+      const list = await searchLocation(query, this.opts.search.limit ?? 5, {
+        signal: this.searchAbort.signal,
+      });
       if (my !== this.searchSeq) return;
       this.emitter.emit('searchResults', list);
       if (!list.length) {
@@ -605,6 +638,7 @@ export class LocationPicker {
       results.innerHTML = '';
       for (const it of list) results.appendChild(this.resultRow(it.display_name, it.lat, it.lon));
     } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
       if (my !== this.searchSeq) return;
       results.innerHTML = `<div class="qp-err">${this.t('searchError')}</div>`;
       this.fail(e);
