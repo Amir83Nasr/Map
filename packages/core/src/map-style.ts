@@ -1033,11 +1033,34 @@ const layers = [
 
 export const OPENFREEMAP_TILEJSON_URL = 'https://tiles.openfreemap.org/planet';
 
+// Default basemap: self-hosted-glyph Snapp-like vector style (OpenMapTiles
+// schema, OpenFreeMap planet tiles, no API key). OSM raster kept as
+// MAP_STYLE_RASTER fallback for networks where OFM 405s.
+// ponytail: drop MAP_STYLE_RASTER if vector proves reliable everywhere.
+export const MAP_STYLE_RASTER = {
+  version: 8,
+  name: 'osm-raster',
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+} as unknown as StyleSpecification;
+
 export const MAP_STYLE = {
   version: 8,
   name: 'snapp-like',
-  // Relative so subpath deploys (e.g. GitHub Pages /<repo>/) resolve too.
-  glyphs: 'fonts/{fontstack}/{range}.pbf',
+  // Absolute dev+Pages safe: BASE_URL is '/' locally, '/<repo>/' on Pages.
+  glyphs: `${import.meta.env.BASE_URL}fonts/{fontstack}/{range}.pbf`,
   sprite: 'https://tiles.openfreemap.org/sprites/ofm_f384/ofm',
   sources: {
     openmaptiles: { type: 'vector', url: OPENFREEMAP_TILEJSON_URL },

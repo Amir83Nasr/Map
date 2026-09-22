@@ -4,6 +4,7 @@ import { mergeOptions, resolveDir, resolveLabels } from '../src/defaults.js';
 import { enDigits, faStr, isValidLatLng, shortAddr } from '../src/format.js';
 import { applyTheme, themeVars } from '../src/theme.js';
 import { FA_LABELS } from '../src/i18n.js';
+import { MAP_STYLE, MAP_STYLE_RASTER } from '../src/map-style.js';
 
 describe('mergeOptions', () => {
   it('applies defaults', () => {
@@ -55,5 +56,20 @@ describe('theme', () => {
   it('locked: no vars, no-op apply', () => {
     expect(themeVars()).toEqual({});
     expect(applyTheme()).toBeUndefined();
+  });
+});
+
+describe('map style', () => {
+  it('vector default keeps local glyphs + sprite, raster has no font deps', () => {
+    const v = MAP_STYLE as unknown as Record<string, unknown>;
+    expect(v['version']).toBe(8);
+    expect(v['glyphs']).toContain('fonts/{fontstack}/{range}.pbf');
+    expect(v['sprite']).toContain('openfreemap');
+    const r = MAP_STYLE_RASTER as unknown as {
+      sources: { osm: { tiles: string[] } };
+      glyphs?: unknown;
+    };
+    expect(r.sources.osm.tiles.length).toBeGreaterThan(0);
+    expect(r.glyphs).toBeUndefined();
   });
 });

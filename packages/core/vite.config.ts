@@ -10,7 +10,9 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: (f) => (f === 'es' ? 'qompick-core.js' : 'qompick-core.cjs'),
     },
-    rollupOptions: { external: ['maplibre-gl'] },
+    rollupOptions: {
+      external: ['maplibre-gl'],
+    },
     cssCodeSplit: false,
   },
 });

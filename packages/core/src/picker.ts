@@ -1,5 +1,4 @@
-import { Map as MlMap, Marker, Popup, setWorkerUrl } from 'maplibre-gl';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import { Map as MlMap, Marker, Popup } from 'maplibre-gl';
 import type {
   EventHandler,
   LocationPickerOptions,
@@ -8,7 +7,7 @@ import type {
   SearchSuggestion,
 } from './types.js';
 import { DEFAULT_CENTER, mergeOptions, resolveDir } from './defaults.js';
-import { MAP_STYLE } from './map-style.js';
+import { MAP_STYLE, MAP_STYLE_RASTER } from './map-style.js';
 import { Emitter } from './emitter.js';
 import { ICONS } from './icons.js';
 import { enDigits, faCoord, faStr, isValidLatLng, shortAddr } from './format.js';
@@ -178,6 +177,10 @@ export class LocationPicker {
           o.sheet.enabled
             ? `<section class="qp-sheet"><div class="qp-grab"></div>
           ${o.controls.searchTrigger && o.search.enabled ? `<div class="qp-search"><button class="qp-search-trigger" type="button"><span class="qp-sic">${ICONS.search}</span><span class="qp-search-label"></span></button></div>` : ''}
+          <div class="qp-desk">
+            <div class="qp-search-bar"><div class="qp-field"><input class="qp-desk-input" type="search" placeholder="${this.t('searchPlaceholder')}" autocomplete="off" aria-label="${this.t('searchTitle')}"/><button class="qp-clear qp-desk-clear" hidden aria-label="${this.t('clearSearch')}">${ICONS.x}</button><span class="qp-sic">${ICONS.search}</span></div></div>
+            <div class="qp-desk-body"><div class="qp-desk-home"><h3 class="qp-sec-t">${this.t('suggestedPlaces')}</h3><div class="qp-suggest-desk"></div></div><div class="qp-results-desk"></div></div>
+          </div>
           <div class="qp-sheet-row">${o.controls.confirmButton ? `<button class="qp-cta">${this.t('confirmLocation')}</button>` : ''}</div>
         </section>`
             : ''
@@ -225,9 +228,9 @@ export class LocationPicker {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !this.overlay.hidden) this.closeSearch();
     });
-    const input = this.root.querySelector<HTMLInputElement>('.qp-field input');
+    const input = this.root.querySelector<HTMLInputElement>('.qp-overlay .qp-field input');
     if (input) {
-      const clear = this.root.querySelector<HTMLButtonElement>('.qp-clear');
+      const clear = this.root.querySelector<HTMLButtonElement>('.qp-overlay .qp-clear');
       const toggle = (): void => {
         if (clear) clear.hidden = input.value.length === 0;
       };
@@ -246,17 +249,37 @@ export class LocationPicker {
       });
       this.renderSuggest('');
     }
+    // Desktop inline search mirrors the overlay logic into .qp-desk-* nodes.
+    const desk = this.root.querySelector<HTMLInputElement>('.qp-desk-input');
+    if (desk) {
+      const clear = this.root.querySelector<HTMLButtonElement>('.qp-desk-clear');
+      const toggle = (): void => {
+        if (clear) clear.hidden = desk.value.length === 0;
+      };
+      desk.addEventListener('input', () => {
+        toggle();
+        this.onDeskQuery(desk.value);
+      });
+      desk.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.runDeskSearch(desk.value.trim());
+      });
+      clear?.addEventListener('click', () => {
+        desk.value = '';
+        toggle();
+        this.renderDeskSuggest('');
+        desk.focus();
+      });
+      this.renderDeskSuggest('');
+    }
   }
 
   // ── MAP ──
   private initMap(): void {
-    try {
-      setWorkerUrl(workerUrl);
-    } catch {
-      /* worker already set */
-    }
     const o = this.opts;
     const mapEl = this.root.querySelector('.qp-map') as HTMLElement;
+    // Vector first (exact old look: FA labels, IRANYekanX glyphs, road snap).
+    // If its tiles/sprites are unreachable, fall back to OSM raster so the
+    // map never renders gray. Guarded: runs once, only for the default style.
     const base =
       typeof o.map.style === 'object' && o.map.style !== null
         ? { ...(o.map.style as Record<string, unknown>) }
@@ -277,6 +300,15 @@ export class LocationPicker {
         [b[1][1], b[1][0]],
       ],
     });
+    if (!o.map.style) {
+      let fellBack = false;
+      this.map.on('error', (e: unknown) => {
+        if (fellBack || this.destroyed) return;
+        fellBack = true;
+        this.map.setStyle(MAP_STYLE_RASTER as never);
+        this.fail(e);
+      });
+    }
     requestAnimationFrame(() => this.map.resize());
     const wrap = this.root.querySelector('.qp-map-wrap') as HTMLElement;
     let timer = 0;
@@ -331,7 +363,7 @@ export class LocationPicker {
   private addVenues(list: { name: string; lat: number; lng: number }[]): void {
     for (const v of list) {
       const btn = el(
-        `<button class="qp-venue" aria-label="${v.name.replace(/"/g, '')}">${ICONS.trophy}</button>`,
+        `<button class="qp-venue" aria-label="${v.name.replace(/"/g, '')}">${ICONS.star}</button>`,
       ) as HTMLButtonElement;
       btn.type = 'button';
       btn.addEventListener('click', () => {
@@ -397,7 +429,7 @@ export class LocationPicker {
   // ── SEARCH ──
   private openSearch(): void {
     this.overlay.hidden = false;
-    const input = this.root.querySelector<HTMLInputElement>('.qp-field input');
+    const input = this.root.querySelector<HTMLInputElement>('.qp-overlay .qp-field input');
     if (input) {
       input.value = '';
       this.renderSuggest('');
@@ -406,8 +438,55 @@ export class LocationPicker {
   }
   private closeSearch(): void {
     this.overlay.hidden = true;
-    const input = this.root.querySelector<HTMLInputElement>('.qp-field input');
+    const input = this.root.querySelector<HTMLInputElement>('.qp-overlay .qp-field input');
     if (input) input.blur();
+  }
+
+  private pickSuggestion(s: SearchSuggestion): void {
+    this.setLocation(s.lat, s.lng, { moveMap: true, zoom: this.opts.behavior.pickZoom });
+    this.emitter.emit('pick', this.getLocation());
+    this.closeSearch();
+  }
+
+  private pickResult(lat: string, lon: string): void {
+    this.searchSeq++;
+    this.setLocation(parseFloat(lat), parseFloat(lon), {
+      moveMap: true,
+      zoom: this.opts.behavior.pickZoom,
+    });
+    const loc = this.getLocation();
+    this.emitter.emit('pick', loc);
+    if (this.raw.onPick) (this.raw.onPick as (l: PickerLocation) => void)(loc);
+    this.closeSearch();
+  }
+
+  private suggestionRow(s: SearchSuggestion): HTMLButtonElement {
+    const b = el(
+      `<button class="qp-row" type="button"><span class="qp-ric">${ICONS.pin}</span><span class="qp-t"><b></b><small></small></span></button>`,
+    ) as HTMLButtonElement;
+    (b.querySelector('b') as HTMLElement).textContent = faStr(s.name);
+    (b.querySelector('small') as HTMLElement).textContent = faStr(s.addr);
+    b.addEventListener('click', () => this.pickSuggestion(s));
+    return b;
+  }
+
+  private resultRow(displayName: string, lat: string, lon: string): HTMLButtonElement {
+    const b = el(
+      `<button class="qp-card" type="button"><span class="qp-ric">${ICONS.pin}</span><span><b></b><small></small></span></button>`,
+    ) as HTMLButtonElement;
+    (b.querySelector('b') as HTMLElement).textContent = faStr(String(displayName).split(',')[0]);
+    (b.querySelector('small') as HTMLElement).textContent = faStr(shortAddr(displayName));
+    b.addEventListener('click', () => this.pickResult(lat, lon));
+    return b;
+  }
+
+  private filteredSuggestions(q: string): SearchSuggestion[] {
+    const needle = enDigits(q).trim();
+    return this.suggestions()
+      .filter(
+        (x) => !needle || enDigits(x.name).includes(needle) || enDigits(x.addr).includes(needle),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, 'fa'));
   }
 
   private suggestions(): SearchSuggestion[] {
@@ -420,42 +499,52 @@ export class LocationPicker {
     const results = this.root.querySelector('.qp-results') as HTMLElement | null;
     if (!box) return;
     box.innerHTML = '';
-    const needle = enDigits(q).trim();
-    for (const s of this.suggestions().filter(
-      (x) => !needle || enDigits(x.name).includes(needle) || enDigits(x.addr).includes(needle),
-    )) {
-      const b = el(
-        `<button class="qp-row" type="button"><span class="qp-ric">${ICONS.pin}</span><span class="qp-t"><b></b><small></small></span></button>`,
-      ) as HTMLButtonElement;
-      (b.querySelector('b') as HTMLElement).textContent = faStr(s.name);
-      (b.querySelector('small') as HTMLElement).textContent = faStr(s.addr);
-      b.addEventListener('click', () => {
-        this.setLocation(s.lat, s.lng, { moveMap: true, zoom: this.opts.behavior.pickZoom });
-        this.emitter.emit('pick', this.getLocation());
-        this.closeSearch();
-      });
-      box.appendChild(b);
-    }
+    for (const s of this.filteredSuggestions(q)) box.appendChild(this.suggestionRow(s));
+    if (home) home.hidden = false;
+    if (results) results.innerHTML = '';
+  }
+
+  // Desktop inline mirrors (same data, .qp-desk-* nodes, no overlay).
+  private renderDeskSuggest(q: string): void {
+    const box = this.root.querySelector('.qp-suggest-desk');
+    const home = this.root.querySelector('.qp-desk-home') as HTMLElement | null;
+    const results = this.root.querySelector('.qp-results-desk') as HTMLElement | null;
+    if (!box) return;
+    box.innerHTML = '';
+    for (const s of this.filteredSuggestions(q)) box.appendChild(this.suggestionRow(s));
     if (home) home.hidden = false;
     if (results) results.innerHTML = '';
   }
 
   private onQuery(q: string): void {
+    this.onQueryShared(
+      q,
+      (v) => this.renderSuggest(v),
+      (v) => void this.runSearch(v),
+    );
+  }
+
+  // Shared debounce for overlay + desktop inputs (same minLength/timing).
+  private onQueryShared(
+    q: string,
+    renderLocal: (v: string) => void,
+    run: (v: string) => void,
+  ): void {
     this.searchSeq++;
     const my = this.searchSeq;
     window.clearTimeout(this.privateTimers.pop());
     const query = q.trim();
     const min = this.opts.search.minLength ?? MIN_QUERY_LEN_FALLBACK;
     if (query.length < 1) {
-      this.renderSuggest('');
+      renderLocal('');
       return;
     }
     if (query.length < min) {
-      this.renderSuggest(query);
+      renderLocal(query);
       return;
     }
     const t = window.setTimeout(() => {
-      if (my === this.searchSeq) void this.runSearch(query);
+      if (my === this.searchSeq) run(query);
     }, this.opts.search.debounceMs ?? 600);
     this.privateTimers.push(t);
   }
@@ -476,27 +565,45 @@ export class LocationPicker {
         return;
       }
       results.innerHTML = '';
-      for (const it of list) {
-        const b = el(
-          `<button class="qp-card" type="button"><span class="qp-ric">${ICONS.pin}</span><span><b></b><small></small></span></button>`,
-        ) as HTMLButtonElement;
-        (b.querySelector('b') as HTMLElement).textContent = faStr(
-          String(it.display_name).split(',')[0],
-        );
-        (b.querySelector('small') as HTMLElement).textContent = faStr(shortAddr(it.display_name));
-        b.addEventListener('click', () => {
-          this.searchSeq++;
-          this.setLocation(parseFloat(it.lat), parseFloat(it.lon), {
-            moveMap: true,
-            zoom: this.opts.behavior.pickZoom,
-          });
-          const loc = this.getLocation();
-          this.emitter.emit('pick', loc);
-          if (this.raw.onPick) (this.raw.onPick as (l: PickerLocation) => void)(loc);
-          this.closeSearch();
-        });
-        results.appendChild(b);
+      for (const it of list) results.appendChild(this.resultRow(it.display_name, it.lat, it.lon));
+    } catch (e) {
+      if (my !== this.searchSeq) return;
+      results.innerHTML = `<div class="qp-err">${this.t('searchError')}</div>`;
+      this.fail(e);
+    }
+  }
+
+  private onDeskQuery(q: string): void {
+    this.onQueryShared(q, (v) => this.renderDeskSuggest(v), (v) => void this.runDeskSearch(v));
+  }
+
+  private async runDeskSearch(q: string): Promise<void> {
+    const query = q.trim();
+    const results = this.root.querySelector('.qp-results-desk') as HTMLElement | null;
+    const home = this.root.querySelector('.qp-desk-home') as HTMLElement | null;
+    if (!results) return;
+    if (!query) {
+      this.renderDeskSuggest('');
+      return;
+    }
+    const min = this.opts.search.minLength ?? MIN_QUERY_LEN_FALLBACK;
+    if (query.length < min) {
+      this.renderDeskSuggest(query);
+      return;
+    }
+    const my = ++this.searchSeq;
+    if (home) home.hidden = true;
+    results.innerHTML = `<div class="qp-err">${this.t('searching')}</div>`;
+    try {
+      const list = await searchLocation(query, this.opts.search.limit ?? 5);
+      if (my !== this.searchSeq) return;
+      this.emitter.emit('searchResults', list);
+      if (!list.length) {
+        results.innerHTML = `<div class="qp-err">${this.t('noResults')}</div>`;
+        return;
       }
+      results.innerHTML = '';
+      for (const it of list) results.appendChild(this.resultRow(it.display_name, it.lat, it.lon));
     } catch (e) {
       if (my !== this.searchSeq) return;
       results.innerHTML = `<div class="qp-err">${this.t('searchError')}</div>`;
