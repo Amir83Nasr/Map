@@ -77,8 +77,8 @@ export class LocationPicker {
     if (e.key !== 'Escape') return;
     if (!this.overlay.hidden) this.closeSearch();
     else if (!this.isHidden('.qp-docs')) this.closeDocs();
-    else this.closeModal('qp-confirm');
-    this.closeModal('qp-geo');
+    else if (!this.isHidden('.qp-confirm')) this.closeModal('qp-confirm');
+    else if (!this.isHidden('.qp-geo')) this.closeModal('qp-geo');
   };
   private isHidden(sel: string): boolean {
     return (this.root.querySelector(sel) as HTMLElement | null)?.hidden ?? true;
@@ -151,9 +151,16 @@ export class LocationPicker {
   locate(): void {
     if (!navigator.geolocation) {
       this.toast(this.t('gpsUnsupported'));
+      this.fail(new Error('geolocate: unsupported'));
       return;
     }
     const btn = this.root.querySelector('.qp-gps');
+    if (!window.isSecureContext) {
+      // file:// و http غیرلوکال همیشه fail می‌دهند؛ مستقیم راهنما باز شود.
+      this.openModal('qp-geo');
+      this.fail(new Error('geolocate: insecure-context'));
+      return;
+    }
     btn?.classList.add('is-locating');
     navigator.geolocation.getCurrentPosition(
       (p) => {
@@ -277,9 +284,7 @@ export class LocationPicker {
         (b.closest('.qp-modal') as HTMLElement | null)?.setAttribute('hidden', '');
       }),
     );
-    this.root
-      .querySelector('.qp-docs .qp-x')
-      ?.addEventListener('click', () => this.closeDocs());
+    this.root.querySelector('.qp-docs .qp-x')?.addEventListener('click', () => this.closeDocs());
     document.addEventListener('keydown', this.onKey);
     this.root.querySelector('.qp-dev')?.addEventListener('click', () => this.openDocs());
     this.root.querySelector('.qp-back')?.addEventListener('click', () => this.closeDocs());
@@ -348,17 +353,11 @@ export class LocationPicker {
     const style = o.map.glyphs ? { ...base, glyphs: o.map.glyphs } : base;
     // Relative glyphs template must resolve against page base, not domain
     // root: core prebuilds with BASE_URL='/', breaks under Pages '/<repo>/'.
-    // new URL() would percent-encode {fontstack}/{range}, so join manually.
+    // Pure string join: new URL() would percent-encode {fontstack}/{range}.
     if (typeof style.glyphs === 'string' && !/^(https?:|data:|blob:|\/)/.test(style.glyphs)) {
-      try {
-        const u = new URL(document.baseURI);
-        u.pathname = u.pathname.endsWith('/')
-          ? u.pathname + (style.glyphs as string)
-          : `${u.pathname.substring(0, u.pathname.lastIndexOf('/') + 1)}${style.glyphs}`;
-        (style as Record<string, unknown>).glyphs = u.toString();
-      } catch {
-        /* keep relative */
-      }
+      const base = document.baseURI;
+      const prefix = base.endsWith('/') ? base : base.slice(0, base.lastIndexOf('/') + 1);
+      (style as Record<string, unknown>).glyphs = prefix + style.glyphs;
     }
     const b = o.map.bounds!;
     this.map = new MlMap({
