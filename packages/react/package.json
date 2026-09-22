@@ -1,6 +1,6 @@
 {
   "name": "qompick-react",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "React location picker on MapLibre (Persian RTL, mobile-first, vector tiles)",
   "license": "MIT",
   "repository": {
