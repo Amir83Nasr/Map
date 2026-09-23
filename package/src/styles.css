@@ -406,6 +406,10 @@
   min-height: 42px;
   outline: none;
 }
+.qp-field input::-webkit-search-cancel-button {
+  display: none;
+  -webkit-appearance: none;
+}
 .qp-sic {
   display: grid;
   place-items: center;
@@ -423,8 +427,15 @@
   background: transparent;
   color: var(--qp-muted);
   cursor: pointer;
+  display: grid;
+  place-items: center;
 }
-.qp-clear[hidden] {
+.qp-clear svg {
+  width: 18px;
+  height: 18px;
+}
+.qp-clear[hidden],
+.qp-clear:not([hidden]) + .qp-sic {
   display: none;
 }
 .qp-ov-body {

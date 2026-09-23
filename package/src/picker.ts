@@ -15,6 +15,23 @@ import { reverseGeocode, searchLocation } from './geocode.js';
 import { trySnapToRoad } from './snap.js';
 
 const MIN_QUERY_LEN_FALLBACK = 3;
+const WORKER_FIX =
+  "Vite: import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'; سپس setWorkerUrl(workerUrl) را قبل از mount صدا بزنید.";
+const WORKER_ERROR_MESSAGE =
+  'qompick: MapLibre worker failed to load. Configure setWorkerUrl() before mounting LocationPickerView.';
+
+export function isMapLibreWorkerError(value: unknown): boolean {
+  const error = value as { message?: unknown; filename?: unknown; url?: unknown } | null;
+  const text = [error?.message, error?.filename, error?.url, value]
+    .filter((part): part is string => typeof part === 'string')
+    .join(' ')
+    .toLowerCase();
+  return (
+    /maplibre-gl-(worker|shared)(?:-dev)?\.mjs/.test(text) ||
+    /failed to fetch worker script/.test(text) ||
+    (/worker/.test(text) && /failed to load|cannot load|dynamically imported module/.test(text))
+  );
+}
 
 const DEV_PROMPT_ZERO =
   'من می‌خواهم با پکیج قم‌پیک (qompick-react) یک نقشه انتخاب موقعیت (LocationPickerView) از صفر در پروژه React/Next.js بسازم. ' +
@@ -69,6 +86,7 @@ export class LocationPicker {
   private revAbort: AbortController | null = null;
   private searchAbort: AbortController | null = null;
   private destroyed = false;
+  private workerFailed = false;
   lat = DEFAULT_CENTER.lat;
   lng = DEFAULT_CENTER.lng;
   address = '';
@@ -383,6 +401,13 @@ export class LocationPicker {
         [b[0][1], b[0][0]],
         [b[1][1], b[1][0]],
       ],
+    });
+    this.map.on('error', (event) => {
+      if (isMapLibreWorkerError(event.error)) {
+        this.showWorkerError();
+        return;
+      }
+      this.fail(event.error);
     });
     requestAnimationFrame(() => this.map.resize());
     const wrap = this.root.querySelector('.qp-map-wrap') as HTMLElement;

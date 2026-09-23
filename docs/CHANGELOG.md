@@ -2,6 +2,7 @@
 
 ## 2026-09-23
 
+- Search field uses one clear button: entered text replaces the magnifier with the clear icon, and the browser-native search cancel control stays hidden
 - `1.0.2` — npm metadata for the GitHub link: `homepage` (Pages demo) + `bugs` (repo issues); package-level `packages/react/README.md` so the npm page shows docs (`1.0.1` added `repository.url`, required by npm provenance verification)
 - Ship IRANYekanX by default in the package (demo parity): `@font-face` woff2 inlined into `dist/qompick-react.css`, and map `glyphs` default → `https://cdn.jsdelivr.net/npm/qompick-react@1/fonts/{fontstack}/{range}.pbf` (256 PBFs published via `files: dist, fonts`) — consumers get Persian UI font + map labels with zero setup; first shipped in `1.0.1`
 - Demo keeps its local glyphs via `map.glyphs: 'fonts/{fontstack}/{range}.pbf'` and drops its own `@font-face` (package CSS provides it)
