@@ -5,7 +5,7 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const reactSrc = (p: string): string =>
-  decodeURIComponent(new URL(`../packages/react/src/${p}`, import.meta.url).pathname);
+  decodeURIComponent(new URL(`../package/src/${p}`, import.meta.url).pathname);
 
 // MapLibre resolves the worker via import.meta.url (sibling of the main chunk).
 // Vite inlines maplibre-gl, so ship worker + shared next to assets/*.js.
@@ -44,8 +44,8 @@ export default defineConfig({
   optimizeDeps: { exclude: ['maplibre-gl'] },
   resolve: {
     alias: {
-      'qompick-react/styles.css': reactSrc('styles.css'),
-      'qompick-react': reactSrc('index.tsx'),
+      '@amir83nasr/map/styles.css': reactSrc('styles.css'),
+      '@amir83nasr/map': reactSrc('index.tsx'),
     },
   },
 });

@@ -30,6 +30,5 @@ export const FA_LABELS: Labels = {
   backToMap: 'بازگشت به نقشه',
   copy: 'کپی',
   copied: 'کپی شد',
+  submitting: 'در حال ثبت...',
 };
-
-export const EN_LABELS: Labels = { ...FA_LABELS };

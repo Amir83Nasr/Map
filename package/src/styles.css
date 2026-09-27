@@ -482,6 +482,33 @@
   font-size: 13px;
   color: var(--qp-muted);
 }
+.qp-map-err {
+  position: absolute;
+  inset: 16px;
+  z-index: 700;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  border: 1px solid #fecaca;
+  border-radius: var(--qp-radius);
+  background: #fff7f7;
+  color: #991b1b;
+  text-align: center;
+  line-height: 1.8;
+}
+.qp-map-err strong,
+.qp-map-err span {
+  display: block;
+}
+.qp-map-err code {
+  display: block;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  color: #7f1d1d;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  text-align: left;
+}
 /* ── DEVELOPER DOCS ──────────────────────────────────── */
 .qp-dev {
   position: absolute;

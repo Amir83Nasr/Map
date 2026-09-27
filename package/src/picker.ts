@@ -16,9 +16,37 @@ import { trySnapToRoad } from './snap.js';
 
 const MIN_QUERY_LEN_FALLBACK = 3;
 const WORKER_FIX =
-  "Vite: import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'; سپس setWorkerUrl(workerUrl) را قبل از mount صدا بزنید.";
+  "Vite: import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'; سپس setupQomPickWorker(workerUrl) را قبل از mount صدا بزنید. Next.js/webpack: هر دو فایل worker و shared را کپی کنید.";
 const WORKER_ERROR_MESSAGE =
-  'qompick: MapLibre worker failed to load. Configure setWorkerUrl() before mounting LocationPickerView.';
+  'qompick: MapLibre worker failed to load. Call setupQomPickWorker(workerUrl) from @amir83nasr/map before mounting LocationPickerView. Vite: use maplibre-gl-worker.mjs?worker&url. Next.js/webpack: copy maplibre-gl-worker.mjs and maplibre-gl-shared.mjs.';
+
+// A broken worker is invisible from map events: Actor subscribes only to Worker
+// 'message' (never 'error'), a 404'd script still lets map 'load' fire, and the
+// failure Event carries no message/filename to classify. The only reliable signal
+// is the Worker instance itself — MapLibre builds the pool synchronously inside
+// `new MlMap()`, so hook construction there and restore the global right after.
+// Shared pool verdict: a second picker reusing an already-broken pool still sees it.
+// A fresh pool build clears the stale verdict; a later error event sets it again.
+let sharedWorkerBroken = false;
+
+function watchWorkerStartup(onError: () => void): () => void {
+  const Native = globalThis.Worker;
+  if (typeof Native !== 'function') return () => undefined;
+  class ObservedWorker extends Native {
+    constructor(scriptURL: string | URL, options?: WorkerOptions) {
+      super(scriptURL, options);
+      sharedWorkerBroken = false; // fresh pool build: previous verdict is stale
+      this.addEventListener('error', () => {
+        sharedWorkerBroken = true;
+        onError();
+      });
+    }
+  }
+  globalThis.Worker = ObservedWorker;
+  return () => {
+    globalThis.Worker = Native;
+  };
+}
 
 export function isMapLibreWorkerError(value: unknown): boolean {
   const error = value as { message?: unknown; filename?: unknown; url?: unknown } | null;
@@ -34,12 +62,12 @@ export function isMapLibreWorkerError(value: unknown): boolean {
 }
 
 const DEV_PROMPT_ZERO =
-  'من می‌خواهم با پکیج قم‌پیک (qompick-react) یک نقشه انتخاب موقعیت (LocationPickerView) از صفر در پروژه React/Next.js بسازم. ' +
+  'من می‌خواهم با پکیج قم‌پیک (@amir83nasr/map) یک نقشه انتخاب موقعیت (LocationPickerView) از صفر در پروژه React/Next.js بسازم. ' +
   'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده و فقط نسخه React دارد. ' +
   'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
-  '۱) نصب — دستور نصب qompick-react و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)؛ ' +
-  '۲) راه‌اندازی پایه — ایمپورت qompick-react/styles.css (شامل CSS مپ‌لایبر، فقط یک import CSS) و رندر کامپوننت LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) و center و zoom اولیه؛ ' +
-  '۳) جستجو — فعال‌سازی search و دادن suggestions اولیه با فیلدهای name و addr و lat و lng؛ ' +
+  '۱) نصب — دستور نصب @amir83nasr/map و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)؛ ' +
+  '۲) راه‌اندازی پایه — ایمپورت @amir83nasr/map/styles.css (شامل CSS مپ‌لایبر، فقط یک import CSS) و رندر کامپوننت LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) و center و zoom اولیه؛ ' +
+  '۳) جستجو — استفاده از پیشنهادهای پیش‌فرض محله‌های قم، یا جایگزینی آن‌ها با search.suggestions شامل name و addr و lat و lng؛' +
   '۴) مارکرها — نمایش مارکر مکان‌ها با markers؛ ' +
   '۵) دریافت نتیجه — گرفتن مختصات و آدرس تاییدشده کاربر با onConfirm؛ ' +
   '۶) پاک‌سازی — کامپوننت LocationPickerView خودش destroy را در cleanup صدا می‌زند. ' +
@@ -47,13 +75,13 @@ const DEV_PROMPT_ZERO =
   'اگر چیزی از پروژه من لازم داری (نسخه React/Next.js، نسخه پکیج‌ها) اول بپرس.';
 
 const DEV_PROMPT_EXISTING =
-  'پروژه React/Next.js من از قبل وجود دارد و می‌خواهم نقشه انتخاب موقعیت قم‌پیک (qompick-react) را به آن اضافه کنم بدون این‌که چیز دیگری خراب شود. ' +
+  'پروژه React/Next.js من از قبل وجود دارد و می‌خواهم نقشه انتخاب موقعیت قم‌پیک (@amir83nasr/map) را به آن اضافه کنم بدون این‌که چیز دیگری خراب شود. ' +
   'این پکیج کاملاً متن‌باز و رایگان است و روی MapLibre GL ساخته شده و فقط نسخه React دارد. ' +
   'لطفاً قدم‌به‌قدم و به ترتیب راهنمایی‌ام کن: ' +
-  '۱) نصب — دستور نصب qompick-react و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)، با توجه به این‌که بقیه dependencyهای پروژه نباید به‌هم بخورد؛ ' +
-  '۲) ایمپورت css — اضافه کردن qompick-react/styles.css (شامل CSS مپ‌لایبر؛ فقط یک import CSS) طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
+  '۱) نصب — دستور نصب @amir83nasr/map و maplibre-gl نسخه ۶ (که peer dependency است و باید جدا نصب شود)، با توجه به این‌که بقیه dependencyهای پروژه نباید به‌هم بخورد؛ ' +
+  '۲) ایمپورت css — اضافه کردن @amir83nasr/map/styles.css (شامل CSS مپ‌لایبر؛ فقط یک import CSS) طوری که با استایل‌های فعلی پروژه تداخل نکند (همه کلاس‌ها و متغیرهای قم‌پیک با qp- شروع می‌شوند)؛ ' +
   '۳) کانتینر — رندر LocationPickerView با ارتفاع مشخص (مثلاً 480px، چون بدون ارتفاع نقشه خالی دیده می‌شود) در جای مناسب صفحه فعلی؛ ' +
-  '۴) اتصال — دادن center و zoom، اضافه کردن search با suggestions، نمایش markers، و گرفتن مختصات و آدرس تاییدشده با onConfirm؛ ' +
+  '۴) اتصال — دادن center و zoom، استفاده یا جایگزینی پیشنهادهای پیش‌فرض search، نمایش markers، و گرفتن مختصات و آدرس تاییدشده با onConfirm؛' +
   '۵) پاک‌سازی — کامپوننت LocationPickerView خودش destroy را در cleanup صدا می‌زند. ' +
   'کد کامل و قابل اجرا بده شامل همه importها، بگو هر بخش چه می‌کند، و در پایان خروجی مورد انتظار را توصیف کن: نقشه فارسی راست‌چین (RTL) و موبایل‌فرست با پین وسط، دکمه GPS، جستجو و دکمه تایید موقعیت. ' +
   'اگر چیزی از پروژه من لازم داری (نسخه React/Next.js، نسخه پکیج‌ها، ساختار فایل‌ها) اول بپرس.';
@@ -71,7 +99,6 @@ function el(html: string): HTMLElement {
 
 export class LocationPicker {
   private opts: ReturnType<typeof mergeOptions>;
-  private raw: LocationPickerOptions;
   private emitter = new Emitter();
   private root!: HTMLElement;
   private map!: MlMap;
@@ -80,13 +107,19 @@ export class LocationPicker {
   private labelEl!: HTMLElement;
   private toastEl!: HTMLElement;
   private overlay!: HTMLElement;
-  privateTimers: number[] = [];
+  private resolveT = 0;
+  private searchT = 0;
+  private toastT = 0;
+  private settleT = 0;
+  private confirmT = 0;
+  private venueT: number[] = [];
   private revSeq = 0;
   private searchSeq = 0;
   private revAbort: AbortController | null = null;
   private searchAbort: AbortController | null = null;
   private destroyed = false;
   private workerFailed = false;
+  private boundsSaved: { sw: [number, number]; ne: [number, number] } | null = null;
   lat = DEFAULT_CENTER.lat;
   lng = DEFAULT_CENTER.lng;
   address = '';
@@ -103,7 +136,6 @@ export class LocationPicker {
   }
 
   constructor(options: LocationPickerOptions) {
-    this.raw = options;
     const host =
       typeof options.container === 'string'
         ? document.querySelector<HTMLElement>(options.container)
@@ -185,12 +217,22 @@ export class LocationPicker {
         btn?.classList.remove('is-locating');
         // موقعیت GPS ممکن است خارج از bounds پیش‌فرض (محدوده قم) باشد؛
         // بدون برداشتن سقف، flyTo به لبه bounds clamp می‌شود و دکمه بی‌اثر به نظر می‌رسد.
+        // فقط برای این پرواز باز می‌شود و بلافاصله بعدش برمی‌گردد.
+        if (!this.boundsSaved) {
+          const b = this.map.getMaxBounds();
+          if (b)
+            this.boundsSaved = { sw: b.getSouthWest().toArray(), ne: b.getNorthEast().toArray() };
+        }
         this.map.setMaxBounds(null);
         this.showMyPos(p.coords.latitude, p.coords.longitude);
         this.setLocation(p.coords.latitude, p.coords.longitude, {
           moveMap: true,
           zoom: this.opts.behavior.locateZoom ?? 18,
         });
+        if (this.boundsSaved) {
+          this.map.setMaxBounds([this.boundsSaved.sw, this.boundsSaved.ne]);
+          this.boundsSaved = null;
+        }
         this.emitter.emit('locate', this.getLocation());
       },
       (err) => {
@@ -215,14 +257,18 @@ export class LocationPicker {
       address: customAddress ?? this.address,
     };
     this.emitter.emit('confirm', loc);
-    if (this.raw.onConfirm) this.raw.onConfirm(loc);
     return loc;
   }
 
   destroy(): void {
     this.destroyed = true;
     document.removeEventListener('keydown', this.onKey);
-    this.privateTimers.forEach((t) => window.clearTimeout(t));
+    window.clearTimeout(this.resolveT);
+    window.clearTimeout(this.searchT);
+    window.clearTimeout(this.toastT);
+    window.clearTimeout(this.settleT);
+    window.clearTimeout(this.confirmT);
+    this.venueT.forEach((t) => window.clearTimeout(t));
     this.revAbort?.abort();
     this.searchAbort?.abort();
     this.venueMarkers.forEach((m) => m.remove());
@@ -239,6 +285,11 @@ export class LocationPicker {
   private build(host: HTMLElement): void {
     const o = this.opts;
     const dir = resolveDir();
+    const ph = (o.search.placeholder ?? this.t('searchPlaceholder'))
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
     this.root = el(`<div class="qp qp-app" dir="${dir}"></div>`);
     const pinHtml = `<div class="qp-pin" aria-hidden="true"><div class="qp-pin-body"><div class="qp-pin-head"><div class="qp-pin-hole"></div></div><div class="qp-pin-stem"></div><div class="qp-pin-foot"></div></div><div class="qp-pin-shadow"></div></div>`;
     this.root.innerHTML = `
@@ -252,7 +303,7 @@ export class LocationPicker {
             ? `<section class="qp-sheet"><div class="qp-grab"></div>
           ${o.controls.searchTrigger && o.search.enabled ? `<div class="qp-search"><button class="qp-search-trigger" type="button"><span class="qp-sic">${ICONS.search}</span><span class="qp-search-label"></span></button></div>` : ''}
           <div class="qp-desk">
-            <div class="qp-search-bar"><div class="qp-field"><input class="qp-desk-input" type="search" placeholder="${this.t('searchPlaceholder')}" autocomplete="off" aria-label="${this.t('searchTitle')}"/><button class="qp-clear qp-desk-clear" hidden aria-label="${this.t('clearSearch')}">${ICONS.x}</button><span class="qp-sic">${ICONS.search}</span></div></div>
+            <div class="qp-search-bar"><div class="qp-field"><input class="qp-desk-input" type="search" placeholder="${ph}" autocomplete="off" aria-label="${this.t('searchTitle')}"/><button class="qp-clear qp-desk-clear" hidden aria-label="${this.t('clearSearch')}">${ICONS.x}</button><span class="qp-sic">${ICONS.search}</span></div></div>
             <div class="qp-desk-body"><div class="qp-desk-home"><h3 class="qp-sec-t">${this.t('suggestedPlaces')}</h3><div class="qp-suggest-desk"></div></div><div class="qp-results-desk"></div></div>
           </div>
           <div class="qp-sheet-row">${o.controls.confirmButton ? `<button class="qp-cta">${this.t('confirmLocation')}</button>` : ''}</div>
@@ -263,7 +314,7 @@ export class LocationPicker {
       ${
         o.search.enabled
           ? `<div class="qp-overlay" hidden><div class="qp-ov-head"><h2>${this.t('searchTitle')}</h2><button class="qp-ov-close" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div>
-        <div class="qp-search-bar"><div class="qp-field"><input type="search" placeholder="${this.t('searchPlaceholder')}" autocomplete="off"/><button class="qp-clear" hidden aria-label="${this.t('clearSearch')}">${ICONS.x}</button><span class="qp-sic">${ICONS.search}</span></div></div>
+        <div class="qp-search-bar"><div class="qp-field"><input type="search" placeholder="${ph}" autocomplete="off"/><button class="qp-clear" hidden aria-label="${this.t('clearSearch')}">${ICONS.x}</button><span class="qp-sic">${ICONS.search}</span></div></div>
         <div class="qp-ov-body"><div class="qp-home"><h3 class="qp-sec-t">${this.t('suggestedPlaces')}</h3><div class="qp-suggest"></div></div><div class="qp-results"></div></div>
       </div>`
           : ''
@@ -350,7 +401,8 @@ export class LocationPicker {
         this.onDeskQuery(desk.value);
       });
       desk.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') this.runDeskSearch(desk.value.trim());
+        if (e.key === 'Enter')
+          void this.runRemoteSearch(desk.value.trim(), '.qp-results-desk', '.qp-desk-home');
       });
       clear?.addEventListener('click', () => {
         desk.value = '';
@@ -381,44 +433,52 @@ export class LocationPicker {
       (style as Record<string, unknown>).glyphs = prefix + style.glyphs;
     }
     const b = o.map.bounds!;
-    this.map = new MlMap({
-      container: mapEl,
-      style: style as never,
-      center: [o.map.center!.lng, o.map.center!.lat],
-      zoom: o.map.zoom,
-      minZoom: o.map.minZoom,
-      maxZoom: o.map.maxZoom,
-      attributionControl: false,
-      renderWorldCopies: false,
-      // Faster feel: shorter fades, no pitch/rotate handlers, wider click tolerance.
-      fadeDuration: 100,
-      crossSourceCollisions: false,
-      scrollZoom: { around: 'center' },
-      dragRotate: false,
-      touchPitch: false,
-      clickTolerance: 5,
-      maxBounds: [
-        [b[0][1], b[0][0]],
-        [b[1][1], b[1][0]],
-      ],
-    });
+    const unwatch = watchWorkerStartup(() => this.showWorkerError());
+    try {
+      this.map = new MlMap({
+        container: mapEl,
+        style: style as never,
+        center: [o.map.center!.lng, o.map.center!.lat],
+        zoom: o.map.zoom,
+        minZoom: o.map.minZoom,
+        maxZoom: o.map.maxZoom,
+        attributionControl: false,
+        renderWorldCopies: false,
+        // Faster feel: shorter fades, no pitch/rotate handlers, wider click tolerance.
+        fadeDuration: 100,
+        crossSourceCollisions: false,
+        scrollZoom: { around: 'center' },
+        dragRotate: false,
+        touchPitch: false,
+        clickTolerance: 5,
+        maxBounds: [
+          [b[0][1], b[0][0]],
+          [b[1][1], b[1][0]],
+        ],
+      });
+    } finally {
+      unwatch();
+    }
+    // Pool reused from an already-failed picker: no new Worker was built here.
+    if (sharedWorkerBroken) this.showWorkerError();
     this.map.on('error', (event) => {
       if (isMapLibreWorkerError(event.error)) {
         this.showWorkerError();
         return;
       }
+      // A listener suppresses MapLibre's default console.error — keep it explicit.
+      console.error(event.error);
       this.fail(event.error);
     });
     requestAnimationFrame(() => this.map.resize());
     const wrap = this.root.querySelector('.qp-map-wrap') as HTMLElement;
-    let timer = 0;
     let snapTarget: { lat: number; lng: number } | null = null;
     let startZoom = this.map.getZoom();
     let startCenter = this.map.getCenter();
     this.map.on('movestart', () => {
       wrap.classList.add('is-moving');
       // Pending snap dies the moment a new gesture starts — never yank mid-pan.
-      window.clearTimeout(timer);
+      window.clearTimeout(this.settleT);
       startZoom = this.map.getZoom();
       startCenter = this.map.getCenter();
     });
@@ -430,7 +490,7 @@ export class LocationPicker {
     this.map.on('moveend', (e) => {
       wrap.classList.remove('is-moving');
       const c = this.map.getCenter();
-      window.clearTimeout(timer);
+      window.clearTimeout(this.settleT);
       if (
         snapTarget &&
         Math.abs(c.lat - snapTarget.lat) < 1e-7 &&
@@ -453,7 +513,8 @@ export class LocationPicker {
       const settleMs = pinchZoom
         ? 0
         : (this.opts.behavior.snapDelayMs ?? this.opts.behavior.settleDelayMs);
-      timer = window.setTimeout(() => {
+      this.settleT = window.setTimeout(() => {
+        if (this.destroyed) return;
         if (this.opts.behavior.snapToRoad && !pinchZoom) {
           try {
             const snap = trySnapToRoad(this.map, c.lat, c.lng);
@@ -469,8 +530,26 @@ export class LocationPicker {
         }
         this.setLocation(c.lat, c.lng);
       }, settleMs);
-      this.privateTimers.push(timer);
     });
+  }
+
+  private showWorkerError(): void {
+    if (this.destroyed || this.workerFailed) return;
+    this.workerFailed = true;
+    const err = new Error(WORKER_ERROR_MESSAGE);
+    console.warn(err.message);
+    this.fail(err);
+
+    const box = el('<div class="qp-err qp-map-err" role="alert"></div>');
+    const title = el('<strong></strong>');
+    title.textContent = 'ورکر MapLibre بارگذاری نشد؛ نقشه قابل استفاده نیست.';
+    const detail = el('<span></span>');
+    detail.textContent = 'راه‌حل: ';
+    const code = el('<code dir="ltr"></code>');
+    code.textContent = WORKER_FIX;
+    detail.appendChild(code);
+    box.append(title, detail);
+    this.root.querySelector('.qp-map-wrap')?.appendChild(box);
   }
 
   private showMyPos(lat: number, lng: number): void {
@@ -484,10 +563,11 @@ export class LocationPicker {
 
   private addVenues(list: { name: string; lat: number; lng: number }[]): void {
     for (const v of list) {
-      const btn = el(
-        `<button class="qp-venue" aria-label="${v.name.replace(/"/g, '')}">${ICONS.star}</button>`,
-      ) as HTMLButtonElement;
+      const btn = document.createElement('button');
       btn.type = 'button';
+      btn.className = 'qp-venue';
+      btn.setAttribute('aria-label', v.name);
+      btn.innerHTML = ICONS.star;
       btn.addEventListener('click', () => {
         this.setLocation(v.lat, v.lng, { moveMap: true, zoom: this.opts.behavior.pickZoom });
         this.emitter.emit('pick', this.getLocation());
@@ -510,6 +590,7 @@ export class LocationPicker {
       popup.on('open', () => {
         window.clearTimeout(timer);
         timer = window.setTimeout(() => popup.remove(), 4000);
+        this.venueT.push(timer);
       });
       popup.on('close', () => window.clearTimeout(timer));
       this.venueMarkers.push(marker);
@@ -518,10 +599,9 @@ export class LocationPicker {
 
   // ── ADDRESS ──
   private scheduleResolve(lat: number, lng: number, delay?: number): void {
-    window.clearTimeout(this.privateTimers.pop());
+    window.clearTimeout(this.resolveT);
     const d = delay ?? this.opts.behavior.resolveDelayMs ?? 600;
-    const t = window.setTimeout(() => void this.resolveAddress(lat, lng), d);
-    this.privateTimers.push(t);
+    this.resolveT = window.setTimeout(() => void this.resolveAddress(lat, lng), d);
   }
 
   private async resolveAddress(lat: number, lng: number): Promise<void> {
@@ -555,25 +635,25 @@ export class LocationPicker {
   private devDocsHtml(): string {
     return `<div class="qp-docs" hidden><div class="qp-docs-card">
       <div class="qp-modal-head"><h2>${this.t('developers')}</h2><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div>
-      <section><h3>معرفی</h3><p>قم‌پیک (qompick-react) نقشه انتخاب موقعیت روی MapLibre برای React است؛ کاملاً متن‌باز و رایگان. فقط نسخه React دارد (کلاس vanilla در exports نیست؛ engine داخلی است). نقشه پیش‌فرض همیشه VECTOR است (نه raster)، با جستجوی آدرس، پین وسط، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست.</p></section>
-      <section><h3>نصب</h3><pre dir="ltr">pnpm add qompick-react maplibre-gl</pre>
+      <section><h3>معرفی</h3><p>قم‌پیک (@amir83nasr/map) نقشه انتخاب موقعیت روی MapLibre برای React است؛ کاملاً متن‌باز و رایگان. فقط نسخه React دارد (کلاس vanilla در exports نیست؛ engine داخلی است). نقشه پیش‌فرض همیشه VECTOR است (نه raster)، با جستجوی آدرس، پین وسط، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست.</p></section>
+      <section><h3>نصب</h3><pre dir="ltr">pnpm add @amir83nasr/map maplibre-gl</pre>
       <p class="qp-note">نکته: maplibre-gl نسخه ۶ و react/react-dom peer dependency هستند و باید جدا نصب شوند.</p>
-      <pre dir="ltr">npm i qompick-react maplibre-gl
-yarn add qompick-react maplibre-gl</pre></section>
-      <section><h3>شروع سریع (React)</h3><pre dir="ltr">import 'qompick-react/styles.css';
-import { LocationPickerView } from 'qompick-react';
+      <pre dir="ltr">npm i @amir83nasr/map maplibre-gl
+yarn add @amir83nasr/map maplibre-gl</pre></section>
+      <section><h3>شروع سریع (React)</h3><pre dir="ltr">import '@amir83nasr/map/styles.css';
+import { LocationPickerView } from '@amir83nasr/map';
 
 &lt;LocationPickerView
-  search={{ suggestions: [] }}
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre>
-      <p class="qp-note">نکته: CSS مپ‌لایبر داخل <code dir="ltr">qompick-react/styles.css</code> بسته‌بندی شده — فقط همین یک import CSS کافی است.</p>
+      <p class="qp-note">نکته: CSS مپ‌لایبر داخل <code dir="ltr">@amir83nasr/map/styles.css</code> بسته‌بندی شده — فقط همین یک import CSS کافی است.</p>
       <p class="qp-note">نکته: فونت فارسی IRANYekanX داخل خود پکیج است (با همین import CSS لود می‌شود) و لیبل‌های فارسی نقشه هم از PBFهای داخل پکیج می‌آیند — بدون تنظیم اضافه.</p>
-      <p class="qp-note">نکته: کامپوننت خودش init و destroy را در lifecycle (useEffect) انجام می‌دهد — بدون init/destroy دستی.</p>
+      <p class="qp-note">نکته: کامپوننت خودش init و destroy را در lifecycle (useEffect) انجام می‌دهد — بدون init/destroy دستی. تنظیمات engine فقط موقع mount اعمال می‌شوند؛ برای تنظیمات جدید با <code dir="ltr">key</code> ریمانت کنید (فقط callbackها زنده می‌مانند).</p>
+      <p class="qp-note">ورکر MapLibre را قبل از mount تنظیم کنید: در Vite فایل <code dir="ltr">maplibre-gl-worker.mjs?worker&amp;url</code> را import و به <code dir="ltr">setupQomPickWorker()</code> بدهید؛ در Next.js/webpack هر دو فایل worker و shared را کپی کنید. خطای ورکر در <code dir="ltr">onError</code>، کنسول و <code dir="ltr">.qp-err</code> نمایش داده می‌شود.</p>
       <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
       <section><h3>تنظیمات مهم</h3><ul class="qp-list">
       <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی برداری (<code dir="ltr">style</code>).</li>
-      <li><code dir="ltr">search</code> — جستجو و پیشنهادها: <code dir="ltr">enabled / suggestions / minLength / debounceMs / limit</code>.</li>
+      <li><code dir="ltr">search</code> — جستجو با پیشنهادهای پیش‌فرض ۴۱ محله قم: <code dir="ltr">enabled / placeholder / suggestions / minLength / debounceMs / limit</code>. آرایه سفارشی جایگزین پیش‌فرض می‌شود؛ <code dir="ltr">suggestions: []</code> آن را خالی می‌کند. <code dir="ltr">limit</code> پیشنهادهای محلی را هم محدود می‌کند.</li>
       <li><code dir="ltr">markers</code> — مارکر مکان‌ها با <code dir="ltr">name / lat / lng</code>.</li>
       <li><code dir="ltr">controls</code> — دکمه‌ها: <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>
       <li><code dir="ltr">behavior</code> — رفتار: <code dir="ltr">snapToRoad / resolveOnMove / resolveDelayMs / settleDelayMs / snapDelayMs / pickZoom / locateZoom</code>.</li>
@@ -586,11 +666,11 @@ import { LocationPickerView } from 'qompick-react';
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre></section>
       <section><h3>ساختار پروژه</h3><ul class="qp-list">
-      <li><code dir="ltr">packages/react/src/index.tsx</code> — API عمومی: کامپوننت <code dir="ltr">LocationPickerView</code> + تایپ‌ها.</li>
-      <li><code dir="ltr">packages/react/src/picker.ts</code> — engine داخلی (در exports عمومی نیست).</li>
-      <li><code dir="ltr">packages/react/src/*.ts</code> — helperها: geocode، snap، format، i18n، map-style، …</li>
-      <li><code dir="ltr">packages/react/src/styles.css</code> — استایل‌ها؛ خروجی build: <code dir="ltr">qompick-react/styles.css</code>.</li>
-      <li><code dir="ltr">packages/react/fonts/</code> — فونت IRANYekanX (woff2) و PBFهای glyph نقشه؛ داخل tarball منتشر می‌شود.</li>
+      <li><code dir="ltr">package/src/index.tsx</code> — API عمومی: کامپوننت <code dir="ltr">LocationPickerView</code>، هلپر <code dir="ltr">setupQomPickWorker</code> + تایپ‌ها.</li>
+      <li><code dir="ltr">package/src/picker.ts</code> — engine داخلی (در exports عمومی نیست).</li>
+      <li><code dir="ltr">package/src/*.ts</code> — helperها: geocode، snap، format، i18n، map-style، …</li>
+      <li><code dir="ltr">package/src/styles.css</code> — استایل‌ها؛ خروجی build <code dir="ltr">dist/qompick-react.css</code> است (ایمپورت: <code dir="ltr">@amir83nasr/map/styles.css</code>).</li>
+      <li><code dir="ltr">package/fonts/</code> — فونت IRANYekanX (woff2) و PBFهای glyph نقشه؛ داخل tarball منتشر می‌شود.</li>
       <li><code dir="ltr">demo/</code> — دموی Vite؛ <code dir="ltr">docs/</code> — ARCHITECTURE و CHANGELOG.</li></ul></section>
       <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. prop جداگانه theme نیست؛ رنگ و فونت را با متغیرهای CSS عوض کنید:</p>
       <pre dir="ltr">.qp { --qp-brand: #16a34a; --qp-radius: 16px; }</pre></section>
@@ -600,8 +680,8 @@ import { LocationPickerView } from 'qompick-react';
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="existing">${this.t('copy')}</button></div></section>
       <section><h3>سوالات پرتکرار</h3><ul class="qp-list">
       <li>نقشه خالی است؟ به کامپوننت ارتفاع بدهید (مثلاً <code dir="ltr">style={{ height: 480 }}</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
-      <li>لیبل‌های فارسی نقشه نمایش داده نمی‌شود؟ glyphهای پیش‌فرض از CDN پکیج می‌آیند؛ برای self-host کردن، <code dir="ltr">map.glyphs</code> را به مسیر فونت‌های پکیج (مثلاً <code dir="ltr">/fonts/{fontstack}/{range}.pbf</code> بعد از کپی <code dir="ltr">node_modules/qompick-react/fonts</code>) تنظیم کنید.</li>
-      <li>پس‌زمینه خاکستری و بدون کاشی؟ بعد از بیلد production، <code dir="ltr">maplibre-gl-worker.mjs</code> و <code dir="ltr">maplibre-gl-shared.mjs</code> باید کنار JS اصلی باشند (یا قبل از mount با <code dir="ltr">setWorkerUrl()</code> مسیر worker را بدهید). worker 404 یعنی کاشی‌ها parse نمی‌شوند.</li>
+      <li>لیبل‌های فارسی نقشه نمایش داده نمی‌شود؟ glyphهای پیش‌فرض از CDN پکیج می‌آیند؛ برای self-host کردن، <code dir="ltr">map.glyphs</code> را به مسیر فونت‌های پکیج (مثلاً <code dir="ltr">/fonts/{fontstack}/{range}.pbf</code> بعد از کپی <code dir="ltr">node_modules/@amir83nasr/map/fonts</code>) تنظیم کنید.</li>
+      <li>پیام خطای ورکر روی نقشه می‌بینید؟ در Vite، <code dir="ltr">maplibre-gl-worker.mjs?worker&amp;url</code> را import و قبل از mount به <code dir="ltr">setupQomPickWorker()</code> بدهید؛ در Next.js/webpack هر دو فایل <code dir="ltr">maplibre-gl-worker.mjs</code> و <code dir="ltr">maplibre-gl-shared.mjs</code> را کپی کنید. پکیج همین خطا را یک‌بار به <code dir="ltr">onError</code> و کنسول هم می‌فرستد.</li>
       <li>کدام نسخه maplibre؟ نسخه ۶؛ چون peer dependency است باید جدا نصب شود.</li>
       <li>در Next.js App Router؟ کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</li>
       <li>رایگان است؟ بله، قم‌پیک کاملاً متن‌باز و رایگان است.</li></ul></section>
@@ -681,7 +761,6 @@ import { LocationPickerView } from 'qompick-react';
     });
     const loc = this.getLocation();
     this.emitter.emit('pick', loc);
-    if (this.raw.onPick) (this.raw.onPick as (l: PickerLocation) => void)(loc);
     this.closeSearch();
   }
 
@@ -707,11 +786,13 @@ import { LocationPickerView } from 'qompick-react';
 
   private filteredSuggestions(q: string): SearchSuggestion[] {
     const needle = enDigits(q).trim();
+    const limit = this.opts.search.limit ?? 5;
     return this.suggestions()
       .filter(
         (x) => !needle || enDigits(x.name).includes(needle) || enDigits(x.addr).includes(needle),
       )
-      .sort((a, b) => a.name.localeCompare(b.name, 'fa'));
+      .sort((a, b) => a.name.localeCompare(b.name, 'fa'))
+      .slice(0, Math.max(1, limit));
   }
 
   private suggestions(): SearchSuggestion[] {
@@ -757,7 +838,7 @@ import { LocationPickerView } from 'qompick-react';
   ): void {
     this.searchSeq++;
     const my = this.searchSeq;
-    window.clearTimeout(this.privateTimers.pop());
+    window.clearTimeout(this.searchT);
     const query = q.trim();
     const min = this.opts.search.minLength ?? MIN_QUERY_LEN_FALLBACK;
     if (query.length < 1) {
@@ -768,61 +849,37 @@ import { LocationPickerView } from 'qompick-react';
       renderLocal(query);
       return;
     }
-    const t = window.setTimeout(() => {
+    this.searchT = window.setTimeout(() => {
       if (my === this.searchSeq) run(query);
     }, this.opts.search.debounceMs ?? 350);
-    this.privateTimers.push(t);
   }
 
   private async runSearch(q: string): Promise<void> {
-    this.searchAbort?.abort();
-    this.searchAbort = new AbortController();
-    const my = ++this.searchSeq;
-    const results = this.root.querySelector('.qp-results') as HTMLElement | null;
-    const home = this.root.querySelector('.qp-home') as HTMLElement | null;
-    if (!results) return;
-    if (home) home.hidden = true;
-    results.innerHTML = `<div class="qp-err">${this.t('searching')}</div>`;
-    try {
-      const list = await searchLocation(q, this.opts.search.limit ?? 5, {
-        signal: this.searchAbort.signal,
-      });
-      if (my !== this.searchSeq) return;
-      this.emitter.emit('searchResults', list);
-      if (!list.length) {
-        results.innerHTML = `<div class="qp-err">${this.t('noResults')}</div>`;
-        return;
-      }
-      results.innerHTML = '';
-      for (const it of list) results.appendChild(this.resultRow(it.display_name, it.lat, it.lon));
-    } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return;
-      if (my !== this.searchSeq) return;
-      results.innerHTML = `<div class="qp-err">${this.t('searchError')}</div>`;
-      this.fail(e);
-    }
+    await this.runRemoteSearch(q, '.qp-results', '.qp-home');
   }
 
   private onDeskQuery(q: string): void {
     this.onQueryShared(
       q,
       (v) => this.renderDeskSuggest(v),
-      (v) => void this.runDeskSearch(v),
+      (v) => void this.runRemoteSearch(v, '.qp-results-desk', '.qp-desk-home'),
     );
   }
 
-  private async runDeskSearch(q: string): Promise<void> {
+  private async runRemoteSearch(q: string, resultsSel: string, homeSel: string): Promise<void> {
     const query = q.trim();
-    const results = this.root.querySelector('.qp-results-desk') as HTMLElement | null;
-    const home = this.root.querySelector('.qp-desk-home') as HTMLElement | null;
+    const results = this.root.querySelector(resultsSel) as HTMLElement | null;
+    const home = this.root.querySelector(homeSel) as HTMLElement | null;
     if (!results) return;
     if (!query) {
-      this.renderDeskSuggest('');
+      if (resultsSel.includes('desk')) this.renderDeskSuggest('');
+      else this.renderSuggest('');
       return;
     }
     const min = this.opts.search.minLength ?? MIN_QUERY_LEN_FALLBACK;
     if (query.length < min) {
-      this.renderDeskSuggest(query);
+      if (resultsSel.includes('desk')) this.renderDeskSuggest(query);
+      else this.renderSuggest(query);
       return;
     }
     const my = ++this.searchSeq;
@@ -874,8 +931,10 @@ import { LocationPickerView } from 'qompick-react';
     const addr = (this.root.querySelector('.qp-addr') as HTMLTextAreaElement).value;
     finalBtn.disabled = true;
     const prev = finalBtn.textContent ?? '';
-    finalBtn.textContent = 'در حال ثبت...';
-    window.setTimeout(() => {
+    finalBtn.textContent = this.t('submitting');
+    window.clearTimeout(this.confirmT);
+    this.confirmT = window.setTimeout(() => {
+      if (this.destroyed) return;
       finalBtn.disabled = false;
       finalBtn.textContent = prev;
       const loc = this.confirm(addr);
@@ -889,14 +948,12 @@ import { LocationPickerView } from 'qompick-react';
   private toast(msg: string): void {
     this.toastEl.textContent = msg;
     this.toastEl.classList.add('show');
-    window.clearTimeout(this.privateTimers.pop());
-    const t = window.setTimeout(() => this.toastEl.classList.remove('show'), 2600);
-    this.privateTimers.push(t);
+    window.clearTimeout(this.toastT);
+    this.toastT = window.setTimeout(() => this.toastEl.classList.remove('show'), 2600);
   }
 
   private fail(e: unknown): void {
     const err = e instanceof Error ? e : new Error(String(e));
     this.emitter.emit('error', err);
-    this.raw.onError?.(err);
   }
 }

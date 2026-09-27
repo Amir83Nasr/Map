@@ -1,18 +1,20 @@
-# qompick-react
+# @amir83nasr/map
 
-MapLibre location picker as a publish-ready npm library. React-only (`qompick-react`) + Vite demo. Persian RTL, mobile-first, vector tiles.
+MapLibre location picker as a publish-ready npm library. React-only (`@amir83nasr/map`) + Vite demo. Persian RTL, mobile-first, vector tiles.
+
+> Agent handbook: [`docs/USAGE.md`](../docs/USAGE.md) — copy-paste install, worker setup, recipes, callbacks, troubleshooting.
 
 ## Install
 
 ```sh
-pnpm add qompick-react maplibre-gl
+pnpm add @amir83nasr/map maplibre-gl
 ```
 
 `maplibre-gl` v6, `react`/`react-dom` are peer dependencies and must be installed separately.
 
 ```ts
-import 'qompick-react/styles.css'; // includes MapLibre CSS
-import { LocationPickerView } from 'qompick-react';
+import '@amir83nasr/map/styles.css'; // includes MapLibre CSS
+import { LocationPickerView } from '@amir83nasr/map';
 ```
 
 ## Quick start — React / Next.js
@@ -21,38 +23,50 @@ Client-only. In Next.js App Router put it in a client component (`'use client'`)
 
 ```tsx
 'use client';
-import { LocationPickerView } from 'qompick-react';
+import { LocationPickerView } from '@amir83nasr/map';
 
 <LocationPickerView
-  search={{ suggestions: [{ name: '...', addr: '...', lat: 34.64, lng: 50.87 }] }}
   markers={[{ name: 'Venue', lat: 34.63, lng: 50.87 }]}
   onConfirm={(loc) => console.log(loc.lat, loc.lng, loc.address)}
 />;
 ```
 
+41 Qom neighborhood suggestions ship as the package default — no `search.suggestions` needed. Pass your own array to replace them, or `suggestions: []` to disable.
+
 The component calls `destroy()` in its own `useEffect` cleanup — no manual init/destroy. Give it a height (default `480px` via `style`); without one the map renders empty.
 
-Public surface: one component (`LocationPickerView`), its props type (`QomPickProps`), and exported types. The engine class stays internal.
+Configure MapLibre's worker before mount (bundler-specific — this package cannot auto-bundle the worker for you). Vite:
+
+```ts
+import { setupQomPickWorker } from '@amir83nasr/map';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+
+setupQomPickWorker(workerUrl);
+```
+
+Next.js/webpack: copy both `maplibre-gl-worker.mjs` and `maplibre-gl-shared.mjs`, then pass the public worker URL to `setupQomPickWorker()`. A missing worker now calls `onError`, writes one `console.warn`, and shows an actionable `.qp-err` over the gray map.
+
+Public surface: one component (`LocationPickerView`), its props type (`QomPickProps`), the `setupQomPickWorker` helper (alias `setupMapWorker`), exported `QOM_SUGGESTIONS`, and exported types. The engine class stays internal. Engine options apply only on mount — remount with a `key` for new options; only callbacks stay live.
 
 ## Config reference
 
 Props of `LocationPickerView` (`QomPickProps` = engine options minus `container`, plus `className`/`style`; callbacks are props):
 
-| Key                                      | Type                                                                                            | Default                                | Notes                                                                   |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
-| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14             | —                                                                       |
-| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap                 | vector style only (never raster)                                        |
-| `map.glyphs`                             | string                                                                                          | jsDelivr CDN (bundled IRANYekanX PBFs) | relative paths resolve against page base; self-host by copying `fonts/` |
-| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers             | `developers` opens the in-map developer docs                            |
-| `search`                                 | `{enabled, suggestions, minLength, debounceMs, limit}`                                          | `3 / 350ms / 5`                        | Nominatim, Qom viewbox                                                  |
-| `sheet`                                  | `{enabled, desktopSidebar}`                                                                     | true                                   | —                                                                       |
-| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`                    | snap waits longer than settle; pinch-zoom never snaps                   |
-| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                             | generic pins, demo enables Qom data                                     |
-| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL             | full label override                                                     |
-| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                                      | props                                                                   |
-| `className/style`                        | —                                                                                               | height `480`                           | pass a height, otherwise the map is empty                               |
+| Key                                      | Type                                                                                            | Default                                | Notes                                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom `34.6416,50.8764`, z14             | —                                                                                                 |
+| `map.style`                              | URL \| StyleSpecification                                                                       | Snapp-like OpenFreeMap                 | vector style only (never raster)                                                                  |
+| `map.glyphs`                             | string                                                                                          | jsDelivr CDN (bundled IRANYekanX PBFs) | relative paths resolve against page base; self-host by copying `fonts/`                           |
+| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers             | `developers` opens the in-map developer docs                                                      |
+| `search`                                 | `{enabled, placeholder, suggestions, minLength, debounceMs, limit}`                             | 41 Qom neighborhoods; `3 / 350ms / 5`  | Nominatim, Qom viewbox; custom array replaces, `[]` disables; `limit` also caps local suggestions |
+| `sheet`                                  | `{enabled}`                                                                                     | true                                   | —                                                                                                 |
+| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`                    | snap waits longer than settle; pinch-zoom never snaps                                             |
+| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                             | generic pins, demo enables Qom data                                                               |
+| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL             | full label override                                                                               |
+| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                                      | props                                                                                             |
+| `className/style`                        | —                                                                                               | height `480`                           | pass a height, otherwise the map is empty                                                         |
 
-Types (`PickerLocation`, `Venue`, `SearchSuggestion`, `QomPickProps`, …) are re-exported from `qompick-react`.
+Types (`PickerLocation`, `Venue`, `SearchSuggestion`, `QomPickProps`, …) are re-exported from `@amir83nasr/map`.
 
 ## Appearance (CSS variables)
 
@@ -85,20 +99,20 @@ Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not su
 
 ## In-map developer docs
 
-Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ (empty map, missing Persian map labels / glyphs, gray background / missing MapLibre worker, maplibre v6 peer, Next.js).
+Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start including worker setup, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ (empty map, missing Persian map labels / glyphs, explicit MapLibre worker failure, maplibre v6 peer, Next.js).
 
 ## Project structure
 
 ```text
-packages/react/          # npm package `qompick-react`
+package/                 # npm package `@amir83nasr/map`
   src/index.tsx          # public: LocationPickerView + types
   src/picker.ts          # internal engine (not exported)
   src/*.ts               # helpers (geocode, snap, format, i18n, …)
-  src/styles.css         # ships as dist/qompick-react.css (+ inlined IRANYekanX @font-face)
+  src/styles.css         # ships as dist/qompick-react.css (import as `@amir83nasr/map/styles.css`)
   fonts/                 # IRANYekanX woff2 + map glyph PBFs (published in the tarball)
   test/helpers.test.ts   # vitest
 demo/                    # Vite demo (vector map, port 5500); ships MapLibre worker files into dist
-docs/                    # ARCHITECTURE.md + CHANGELOG.md
+docs/                    # ARCHITECTURE.md + CHANGELOG.md + USAGE.md (agent handbook)
 ```
 
 ## Scripts
@@ -114,11 +128,11 @@ pnpm test       # react vitest
 ## Publish
 
 ```sh
-cd packages/react && pnpm build && pnpm pack --dry-run  # inspect tarball
-pnpm publish --filter qompick-react --access public
+cd package && pnpm build && pnpm pack --dry-run  # inspect tarball
+pnpm publish --filter @amir83nasr/map --access public
 ```
 
-Versioning: semver, currently `1.0.2`.
+Versioning: semver, currently `1.0.4`.
 
 ## Limitations
 
@@ -126,4 +140,4 @@ Versioning: semver, currently `1.0.2`.
 - Snap-to-road is pixel-space on rendered roads (zoom >= 15), not routable — use OSRM/Valhalla `nearest` for true routing.
 - Single Persian Regular glyph weight; no bold PBFs bundled.
 - One picker per container; module-level worker URL shared across instances.
-- When you bundle `maplibre-gl` yourself (Vite/webpack production build), ship `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs` next to the main JS chunk (or call `setWorkerUrl()` before mount). Missing worker → tile worker 404 → gray background. Demo build does this via `demo/vite.config.ts` (`maplibre-worker-assets`).
+- Configure `setupQomPickWorker(workerUrl)` before mount. Vite should import `maplibre-gl-worker.mjs?worker&url`; Next.js/webpack should ship both `maplibre-gl-worker.mjs` + `maplibre-gl-shared.mjs`. Missing worker triggers `onError`, one `console.warn`, and a visible `.qp-err`. Demo build already copies both files via `demo/vite.config.ts` (`maplibre-worker-assets`).

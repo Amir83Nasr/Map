@@ -48,7 +48,6 @@ export interface SearchOption {
 }
 export interface SheetOption {
   enabled?: boolean;
-  desktopSidebar?: boolean;
 }
 export interface BehaviorOption {
   snapToRoad?: boolean;
@@ -91,6 +90,7 @@ export interface Labels {
   backToMap: string;
   copy: string;
   copied: string;
+  submitting: string;
 }
 
 export interface PickerCallbacks {

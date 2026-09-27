@@ -1,1 +1,1 @@
-LICENSE.md
+package/LICENSE.md

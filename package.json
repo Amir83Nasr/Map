@@ -1,17 +1,17 @@
 {
-  "name": "qompick",
+  "name": "map-workspace",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "packageManager": "pnpm@12.5.1",
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter qompick-demo dev",
-    "build": "pnpm --filter qompick-react build && pnpm --filter qompick-demo build",
-    "typecheck": "pnpm --filter qompick-react build && pnpm --filter qompick-react typecheck && pnpm --filter qompick-demo exec tsc --noEmit",
-    "lint": "eslint packages demo",
+    "build": "pnpm --filter @amir83nasr/map build && pnpm --filter qompick-demo build",
+    "typecheck": "pnpm --filter @amir83nasr/map build && pnpm --filter @amir83nasr/map typecheck && pnpm --filter qompick-demo exec tsc --noEmit",
+    "lint": "eslint package demo",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "pnpm --filter qompick-react test",
+    "test": "pnpm --filter @amir83nasr/map test",
     "prepare": "git config core.hooksPath .githooks"
   },
   "devDependencies": {

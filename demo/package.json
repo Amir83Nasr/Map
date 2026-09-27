@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "maplibre-gl": "^6.10.0",
-    "qompick-react": "workspace:*",
+    "@amir83nasr/map": "workspace:*",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
   },

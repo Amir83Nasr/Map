@@ -1,12 +1,12 @@
 {
-  "name": "qompick-react",
-  "version": "1.0.3",
+  "name": "@amir83nasr/map",
+  "version": "1.0.4",
   "description": "React location picker on MapLibre (Persian RTL, mobile-first, vector tiles)",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Amir83Nasr/Map",
-    "directory": "packages/react"
+    "directory": "package"
   },
   "homepage": "https://amir83nasr.github.io/Map/",
   "bugs": {

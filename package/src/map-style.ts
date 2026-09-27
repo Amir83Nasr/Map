@@ -1044,7 +1044,7 @@ export const MAP_STYLE = {
   // consumers get Persian map labels with zero setup. A relative template
   // still works: picker initMap resolves it against document.baseURI
   // (the demo passes `fonts/{fontstack}/{range}.pbf` for its local copy).
-  glyphs: `https://cdn.jsdelivr.net/npm/qompick-react@1/fonts/{fontstack}/{range}.pbf`,
+  glyphs: `https://cdn.jsdelivr.net/npm/@amir83nasr/map@1/fonts/{fontstack}/{range}.pbf`,
   sprite: 'https://tiles.openfreemap.org/sprites/ofm_f384/ofm',
   sources: {
     openmaptiles: { type: 'vector', url: OPENFREEMAP_TILEJSON_URL },
