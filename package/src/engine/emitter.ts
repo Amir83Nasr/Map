@@ -1,4 +1,4 @@
-import type { EventHandler, PickerEvent } from './types.js';
+import type { EventHandler, PickerEvent } from '../core/types.js';
 
 export class Emitter {
   private map = new Map<PickerEvent, Set<EventHandler>>();

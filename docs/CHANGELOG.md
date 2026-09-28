@@ -1,5 +1,13 @@
 # Changelog — @amir83nasr/map
 
+## 1.1.0 — 2026-09-28 — pro structure
+
+- `src/` split into `react/` + `engine/` + `core/` + `style/` (slim `index.tsx` re-export); tests colocated (`src/*/*.test.ts`, 19 tests)
+- Dist artifacts renamed `qompick-react.*` → `index.js` / `index.cjs` (+`index.d.cts`) / `styles.css`; exports map gets split import/require types (publint-clean)
+- Fontstack folder spaceless (`fonts/IRANYekanX/`); style uses `['IRANYekanX']`
+- Shared `tsconfig.base.json`, Node `>=22` (`.nvmrc` + `engines`), CI setup composite, `preview-dist` (`USE_DIST=1`) + `publint --strict` in CI
+- `LICENSE.md` spelling, `CONTRIBUTING.md`, `SECURITY.md`, issue/PR templates
+
 ## 1.0.4 — 2026-09-28
 
 - Fix double `onConfirm`/`onPick` (callbacks fired twice via emitter + raw call); fix shared `privateTimers` timer-killing, `destroy()` now clears all timers; venue buttons via DOM API (XSS-safe); `locate()` restores `maxBounds` after flight

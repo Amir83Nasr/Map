@@ -1,9 +1,12 @@
 {
   "name": "map-workspace",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.1.0",
   "packageManager": "pnpm@12.5.1",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "pnpm --filter qompick-demo dev",
     "build": "pnpm --filter @amir83nasr/map build && pnpm --filter qompick-demo build",

@@ -15,16 +15,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+      - uses: ./.github/actions/setup
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
-          cache: pnpm
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-      - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm test
       - run: pnpm --filter @amir83nasr/map build
+      - run: cd package && pnpm dlx publint@latest --strict
       - run: pnpm --filter @amir83nasr/map publish --provenance --access public --no-git-checks

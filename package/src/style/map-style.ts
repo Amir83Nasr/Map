@@ -111,9 +111,9 @@ function faDigits(inner: unknown, max = 40): unknown {
 
 const FA_LINE = faDigits(FA);
 
-const REGULAR = ['IRANYekanX Regular'];
+const REGULAR = ['IRANYekanX'];
 // ponytail: single Regular weight only; add real Bold PBFs + stack when Bold file lands.
-const BOLD = ['IRANYekanX Regular'];
+const BOLD = ['IRANYekanX'];
 
 const LINE_SYSTEM = ['LineString', 'MultiLineString'];
 const POINT_SYSTEM = ['MultiPoint', 'Point'];

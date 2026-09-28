@@ -10,12 +10,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check
@@ -26,10 +21,17 @@ jobs:
     needs: check
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - run: pnpm build
+      - run: cd package && pnpm dlx publint@latest --strict
+
+  preview-dist:
+    runs-on: ubuntu-24.04
+    needs: check
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @amir83nasr/map build
+      - run: pnpm --filter qompick-demo exec vite build
+        env:
+          USE_DIST: '1'

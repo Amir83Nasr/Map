@@ -5,13 +5,13 @@ import type {
   PickerEvent,
   PickerLocation,
   SearchSuggestion,
-} from './types.js';
-import { DEFAULT_CENTER, mergeOptions, resolveDir } from './defaults.js';
-import { MAP_STYLE } from './map-style.js';
+} from '../core/types.js';
+import { DEFAULT_CENTER, mergeOptions, resolveDir } from '../core/defaults.js';
+import { MAP_STYLE } from '../style/map-style.js';
 import { Emitter } from './emitter.js';
-import { ICONS } from './icons.js';
-import { enDigits, faCoord, faStr, isValidLatLng, shortAddr } from './format.js';
-import { reverseGeocode, searchLocation } from './geocode.js';
+import { ICONS } from '../core/icons.js';
+import { enDigits, faCoord, faStr, isValidLatLng, shortAddr } from '../core/format.js';
+import { reverseGeocode, searchLocation } from '../core/geocode.js';
 import { trySnapToRoad } from './snap.js';
 
 const MIN_QUERY_LEN_FALLBACK = 3;
@@ -278,7 +278,7 @@ export class LocationPicker {
   }
 
   // ── BUILD ──
-  private t<K extends keyof import('./types.js').Labels>(k: K): string {
+  private t<K extends keyof import('../core/types.js').Labels>(k: K): string {
     return (this.opts.i18n.labels as Record<string, string>)[k];
   }
 
@@ -666,10 +666,11 @@ import { LocationPickerView } from '@amir83nasr/map';
   onConfirm={(loc) =&gt; console.log(loc)}
 /&gt;;</pre></section>
       <section><h3>ساختار پروژه</h3><ul class="qp-list">
-      <li><code dir="ltr">package/src/index.tsx</code> — API عمومی: کامپوننت <code dir="ltr">LocationPickerView</code>، هلپر <code dir="ltr">setupQomPickWorker</code> + تایپ‌ها.</li>
-      <li><code dir="ltr">package/src/picker.ts</code> — engine داخلی (در exports عمومی نیست).</li>
-      <li><code dir="ltr">package/src/*.ts</code> — helperها: geocode، snap، format، i18n، map-style، …</li>
-      <li><code dir="ltr">package/src/styles.css</code> — استایل‌ها؛ خروجی build <code dir="ltr">dist/qompick-react.css</code> است (ایمپورت: <code dir="ltr">@amir83nasr/map/styles.css</code>).</li>
+      <li><code dir="ltr">package/src/index.tsx</code> — API عمومی (re-export از <code dir="ltr">react/ + core/</code>).</li>
+      <li><code dir="ltr">package/src/react/</code> — کامپوننت <code dir="ltr">LocationPickerView</code> + هلپر <code dir="ltr">setupQomPickWorker</code>.</li>
+      <li><code dir="ltr">package/src/engine/</code> — engine داخلی (<code dir="ltr">picker</code>، در exports عمومی نیست).</li>
+      <li><code dir="ltr">package/src/core/ + style/</code> — تایپ‌ها و helperها + استایل و basemap.</li>
+      <li><code dir="ltr">package/src/style/styles.css</code> — استایل‌ها؛ خروجی build <code dir="ltr">dist/styles.css</code> است (ایمپورت: <code dir="ltr">@amir83nasr/map/styles.css</code>).</li>
       <li><code dir="ltr">package/fonts/</code> — فونت IRANYekanX (woff2) و PBFهای glyph نقشه؛ داخل tarball منتشر می‌شود.</li>
       <li><code dir="ltr">demo/</code> — دموی Vite؛ <code dir="ltr">docs/</code> — ARCHITECTURE و CHANGELOG.</li></ul></section>
       <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. prop جداگانه theme نیست؛ رنگ و فونت را با متغیرهای CSS عوض کنید:</p>

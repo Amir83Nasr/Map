@@ -1,7 +1,7 @@
 # USAGE — @amir83nasr/map (agent handbook)
 
 Copy-paste manual for any agent asked to use this package.
-Package: `@amir83nasr/map@1.0.4` — React location picker on MapLibre.
+Package: `@amir83nasr/map@1.1.0` — React location picker on MapLibre.
 Persian RTL, mobile-first, vector tiles only. No CLI, no vanilla JS entry.
 
 ## 1. What this is / is not

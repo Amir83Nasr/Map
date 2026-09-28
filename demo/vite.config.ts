@@ -37,15 +37,21 @@ function maplibreWorkerAssets(): Plugin {
   };
 }
 
+// USE_DIST=1: resolve @amir83nasr/map from package/dist (publish parity check).
+// Default dev: alias to package/src for HMR without a package rebuild.
+const useDist = process.env.USE_DIST === '1';
+
 export default defineConfig({
   plugins: [react(), maplibreWorkerAssets()],
   base: './',
   server: { port: 5500, host: true },
   optimizeDeps: { exclude: ['maplibre-gl'] },
-  resolve: {
-    alias: {
-      '@amir83nasr/map/styles.css': reactSrc('styles.css'),
-      '@amir83nasr/map': reactSrc('index.tsx'),
-    },
-  },
+  resolve: useDist
+    ? {}
+    : {
+        alias: {
+          '@amir83nasr/map/styles.css': reactSrc('style/styles.css'),
+          '@amir83nasr/map': reactSrc('index.tsx'),
+        },
+      },
 });
