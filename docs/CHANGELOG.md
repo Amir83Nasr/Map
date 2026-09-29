@@ -1,5 +1,9 @@
 # Changelog — @amir83nasr/map
 
+## 1.1.1 — 2026-09-29
+
+- Fix `maxCanvasSize` console warning on fullscreen + hiDPI: `initMap` passes `maxCanvasSize: [8192, 8192]` (within typical `MAX_TEXTURE_SIZE`), so canvas CSS size × DPR no longer exceeds MapLibre's 4096 default and full pixel ratio is kept
+
 ## 1.1.0 — 2026-09-28 — pro structure
 
 - `src/` split into `react/` + `engine/` + `core/` + `style/` (slim `index.tsx` re-export); tests colocated (`src/*/*.test.ts`, 19 tests)

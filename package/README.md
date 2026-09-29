@@ -133,7 +133,7 @@ cd package && pnpm build && pnpm pack --dry-run  # inspect tarball
 pnpm publish --filter @amir83nasr/map --access public
 ```
 
-Versioning: semver, currently `1.1.0`.
+Versioning: semver, currently `1.1.1`.
 
 ## Limitations
 

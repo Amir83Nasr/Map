@@ -451,6 +451,10 @@ export class LocationPicker {
         dragRotate: false,
         touchPitch: false,
         clickTolerance: 5,
+        // Fullscreen dialogs on hiDPI (DPR 2-3) exceed MapLibre's 4096
+        // default: canvas CSS size × DPR > 4096px warns and drops pixel
+        // ratio. 8192 fits typical MAX_TEXTURE_SIZE, keeps full res.
+        maxCanvasSize: [8192, 8192],
         maxBounds: [
           [b[0][1], b[0][0]],
           [b[1][1], b[1][0]],
@@ -652,7 +656,7 @@ import { LocationPickerView } from '@amir83nasr/map';
       <p class="qp-note">ورکر MapLibre را قبل از mount تنظیم کنید: در Vite فایل <code dir="ltr">maplibre-gl-worker.mjs?worker&amp;url</code> را import و به <code dir="ltr">setupQomPickWorker()</code> بدهید؛ در Next.js/webpack هر دو فایل worker و shared را کپی کنید. خطای ورکر در <code dir="ltr">onError</code>، کنسول و <code dir="ltr">.qp-err</code> نمایش داده می‌شود.</p>
       <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
       <section><h3>تنظیمات مهم</h3><ul class="qp-list">
-      <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی برداری (<code dir="ltr">style</code>).</li>
+      <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی برداری (<code dir="ltr">style</code>). بوم پیش‌فرض <code dir="ltr">maxCanvasSize 8192</code> است تا دیالوگ تمام‌صفحه روی hiDPI بدون افت pixel ratio رندر شود.</li>
       <li><code dir="ltr">search</code> — جستجو با پیشنهادهای پیش‌فرض ۴۱ محله قم: <code dir="ltr">enabled / placeholder / suggestions / minLength / debounceMs / limit</code>. آرایه سفارشی جایگزین پیش‌فرض می‌شود؛ <code dir="ltr">suggestions: []</code> آن را خالی می‌کند. <code dir="ltr">limit</code> پیشنهادهای محلی را هم محدود می‌کند.</li>
       <li><code dir="ltr">markers</code> — مارکر مکان‌ها با <code dir="ltr">name / lat / lng</code>.</li>
       <li><code dir="ltr">controls</code> — دکمه‌ها: <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>

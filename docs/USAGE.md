@@ -1,7 +1,7 @@
 # USAGE — @amir83nasr/map (agent handbook)
 
 Copy-paste manual for any agent asked to use this package.
-Package: `@amir83nasr/map@1.1.0` — React location picker on MapLibre.
+Package: `@amir83nasr/map@1.1.1` — React location picker on MapLibre.
 Persian RTL, mobile-first, vector tiles only. No CLI, no vanilla JS entry.
 
 ## 1. What this is / is not
@@ -183,14 +183,15 @@ Each fires exactly once per event (deduped since 1.0.3 work).
 
 ## 8. Troubleshooting
 
-| Symptom                             | Cause                   | Fix                                                                            |
-| ----------------------------------- | ----------------------- | ------------------------------------------------------------------------------ |
-| Empty/gray map, no error overlay    | zero height             | set `style={{ height: 480 }}`                                                  |
-| Gray map + `.qp-map-err`            | worker not configured   | section 3a                                                                     |
-| No Persian map labels               | glyph CDN blocked       | `map={{ glyphs: '/fonts/{fontstack}/{range}.pbf' }}` + copy `fonts/` to public |
-| New props ignored                   | mount-only options      | add `key` to remount                                                           |
-| Next.js crash (`window`/`document`) | SSR                     | `'use client'` + `ssr: false`                                                  |
-| Search slow/empty                   | Nominatim limit/network | debounce default ok; check network                                             |
+| Symptom                                      | Cause                                                         | Fix                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Empty/gray map, no error overlay             | zero height                                                   | set `style={{ height: 480 }}`                                                  |
+| Gray map + `.qp-map-err`                     | worker not configured                                         | section 3a                                                                     |
+| No Persian map labels                        | glyph CDN blocked                                             | `map={{ glyphs: '/fonts/{fontstack}/{range}.pbf' }}` + copy `fonts/` to public |
+| New props ignored                            | mount-only options                                            | add `key` to remount                                                           |
+| Next.js crash (`window`/`document`)          | SSR                                                           | `'use client'` + `ssr: false`                                                  |
+| Blurry map + `maxCanvasSize` console warning | canvas larger than MapLibre 4096 default (fullscreen + hiDPI) | fixed in 1.1.1 (`maxCanvasSize 8192` built in)                                 |
+| Search slow/empty                            | Nominatim limit/network                                       | debounce default ok; check network                                             |
 
 ## 9. Agent do / do-not
 

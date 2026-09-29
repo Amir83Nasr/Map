@@ -16,7 +16,7 @@ Public package surface (exports map): `.` → `LocationPickerView` + `setupQomPi
 
 ## Stack
 
-`@amir83nasr/map 1.1.0`, peer deps `react ^18 || ^19`, `react-dom`, `maplibre-gl ^6.10.0`. MapLibre v6 shapes RTL/Arabic natively, no RTL plugin.
+`@amir83nasr/map 1.1.1`, peer deps `react ^18 || ^19`, `react-dom`, `maplibre-gl ^6.10.0`. MapLibre v6 shapes RTL/Arabic natively, no RTL plugin.
 
 ## Basemap (vector only)
 
