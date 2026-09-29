@@ -7,12 +7,12 @@ describe('mergeOptions', () => {
     const m = mergeOptions({ container: '#qp' });
     expect(m.map.zoom).toBe(14);
     expect(m.markers).toEqual([]);
-    expect(m.search.suggestions).toHaveLength(41);
+    expect(m.search.suggestions).toHaveLength(52);
     expect(m.search.suggestions).toContainEqual({
-      name: 'پردیسان، قم',
-      addr: 'شهرک پردیسان، شهر قم',
-      lat: 34.6021,
-      lng: 50.8412,
+      name: 'پردیسان',
+      addr: 'شهر قم، شهرک پردیسان',
+      lat: 34.5588,
+      lng: 50.8331,
     });
   });
   it('replaces or disables default suggestions', () => {
@@ -49,8 +49,8 @@ describe('labels/dir', () => {
   it('submitting label exists (no hardcoded confirm text)', () => {
     expect(FA_LABELS.submitting).toBeTruthy();
   });
-  it('QOM_SUGGESTIONS exported (41 Qom neighborhoods)', () => {
-    expect(QOM_SUGGESTIONS).toHaveLength(41);
+  it('QOM_SUGGESTIONS exported (52 Qom neighborhoods)', () => {
+    expect(QOM_SUGGESTIONS).toHaveLength(52);
     expect(mergeOptions({ container: '#qp' }).search.suggestions).toBe(QOM_SUGGESTIONS);
   });
 });

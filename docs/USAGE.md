@@ -67,7 +67,7 @@ Missing worker symptom: gray map + `.qp-map-err` overlay + one
 | `LocationPickerView`                                          | component       | only UI entry                                                  |
 | `QomPickProps`                                                | type            | props = engine options minus `container` + `className`/`style` |
 | `setupQomPickWorker` / `setupMapWorker`                       | function        | identical aliases                                              |
-| `QOM_SUGGESTIONS`                                             | data (41 items) | default Qom neighborhoods; filter/extend it                    |
+| `QOM_SUGGESTIONS`                                             | data (52 items) | default Qom neighborhoods; filter/extend it                    |
 | `PickerLocation` `Venue` `SearchSuggestion` `NominatimResult` | types           | data shapes                                                    |
 
 ```ts
@@ -171,8 +171,8 @@ Each fires exactly once per event (deduped since 1.0.3 work).
 
 - Center Qom `34.6416,50.8764` z14, bounds clamped to Qom region;
   GPS flight temporarily lifts bounds then restores them.
-- `search`: 41 Qom suggestions default; `minLength 3`, `debounceMs 350`,
-  `limit 5` (also caps local suggestions).
+- `search`: 52 Qom suggestions default (all shown, no cap);
+  `minLength 3`, `debounceMs 350`, `limit 5` (remote Nominatim results only).
 - `behavior`: snap-to-road on manual moves only (zoom >= 15);
   pinch-zoom and programmatic moves never snap.
 - Geocoding = Nominatim, rate-limited, Fa locale, in-memory cache.

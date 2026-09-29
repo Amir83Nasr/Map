@@ -1,6 +1,6 @@
 {
   "name": "@amir83nasr/map",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "React location picker on MapLibre (Persian RTL, mobile-first, vector tiles)",
   "license": "MIT",
   "repository": {

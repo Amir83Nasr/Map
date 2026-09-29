@@ -31,7 +31,7 @@ import { LocationPickerView } from '@amir83nasr/map';
 />;
 ```
 
-41 Qom neighborhood suggestions ship as the package default — no `search.suggestions` needed. Pass your own array to replace them, or `suggestions: []` to disable.
+52 Qom neighborhood suggestions ship as the package default — no `search.suggestions` needed. Pass your own array to replace them, or `suggestions: []` to disable.
 
 The component calls `destroy()` in its own `useEffect` cleanup — no manual init/destroy. Give it a height (default `480px` via `style`); without one the map renders empty.
 
@@ -52,19 +52,19 @@ Public surface: one component (`LocationPickerView`), its props type (`QomPickPr
 
 Props of `LocationPickerView` (`QomPickProps` = engine options minus `container`, plus `className`/`style`; callbacks are props):
 
-| Key                                      | Type                                                                                            | Default                                | Notes                                                                                            |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom`34.6416,50.8764`, z14              | —                                                                                                |
-| `map.style`                              | URL\| StyleSpecification                                                                        | Snapp-like OpenFreeMap                 | vector style only (never raster)                                                                 |
-| `map.glyphs`                             | string                                                                                          | jsDelivr CDN (bundled IRANYekanX PBFs) | relative paths resolve against page base; self-host by copying`fonts/`                           |
-| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers             | `developers` opens the in-map developer docs                                                     |
-| `search`                                 | `{enabled, placeholder, suggestions, minLength, debounceMs, limit}`                             | 41 Qom neighborhoods;`3 / 350ms / 5`   | Nominatim, Qom viewbox; custom array replaces,`[]` disables; `limit` also caps local suggestions |
-| `sheet`                                  | `{enabled}`                                                                                     | true                                   | —                                                                                                |
-| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`                    | snap waits longer than settle; pinch-zoom never snaps                                            |
-| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                             | generic pins, demo enables Qom data                                                              |
-| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL             | full label override                                                                              |
-| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                                      | props                                                                                            |
-| `className/style`                        | —                                                                                               | height`480`                            | pass a height, otherwise the map is empty                                                        |
+| Key                                      | Type                                                                                            | Default                                          | Notes                                                                                         |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `map.center/zoom/minZoom/maxZoom/bounds` | —                                                                                               | Qom`34.6416,50.8764`, z14                        | —                                                                                             |
+| `map.style`                              | URL\| StyleSpecification                                                                        | Snapp-like OpenFreeMap                           | vector style only (never raster)                                                              |
+| `map.glyphs`                             | string                                                                                          | jsDelivr CDN (bundled IRANYekanX PBFs)           | relative paths resolve against page base; self-host by copying`fonts/`                        |
+| `controls`                               | `{gps, confirmButton, searchTrigger, developers}`                                               | all true except developers                       | `developers` opens the in-map developer docs                                                  |
+| `search`                                 | `{enabled, placeholder, suggestions, minLength, debounceMs, limit}`                             | 52 Qom neighborhoods (all shown);`3 / 350ms / 5` | Nominatim, Qom viewbox; custom array replaces,`[]` disables; `limit` caps remote results only |
+| `sheet`                                  | `{enabled}`                                                                                     | true                                             | —                                                                                             |
+| `behavior`                               | `{snapToRoad, resolveOnMove, resolveDelayMs, settleDelayMs, snapDelayMs, pickZoom, locateZoom}` | `400/250/900/15/18`                              | snap waits longer than settle; pinch-zoom never snaps                                         |
+| `markers`                                | `Venue[]`                                                                                       | `[]` (off)                                       | generic pins, demo enables Qom data                                                           |
+| `i18n`                                   | `{labels}`                                                                                      | Persian (`fa`), always RTL                       | full label override                                                                           |
+| callbacks                                | `onLocationChange/onAddressResolved/onSearchResults/onPick/onConfirm/onLocate/onError`          | —                                                | props                                                                                         |
+| `className/style`                        | —                                                                                               | height`480`                                      | pass a height, otherwise the map is empty                                                     |
 
 Types (`PickerLocation`, `Venue`, `SearchSuggestion`, `QomPickProps`, …) are re-exported from `@amir83nasr/map`.
 
@@ -99,7 +99,7 @@ Default basemap is vector (OpenFreeMap + OpenMapTiles); raster styles are not su
 
 ## In-map developer docs
 
-Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens Persian docs inside the map (`.qp-docs`): intro, install, React quick start including worker setup, key settings, appearance, project structure, two copyable prompts (new project / existing project), and FAQ (empty map, missing Persian map labels / glyphs, explicit MapLibre worker failure, maplibre v6 peer, Next.js).
+Pass `controls={{ developers: true }}` to show a «توسعه‌دهندگان» button on the map. It opens numbered Persian docs inside the map (`.qp-docs`) with a section nav: 2-line quick start, mandatory worker setup (Vite / Next.js), props with defaults, callbacks table, theming vars, mount-only `key` rule, FAQ, and two copyable LLM prompts. Every code block has its own copy button (`.qp-code` + `.qp-code-copy`).
 
 ## Project structure
 

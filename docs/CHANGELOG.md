@@ -1,5 +1,10 @@
 # Changelog — @amir83nasr/map
 
+## 1.1.2 — 2026-09-30
+
+- Verify all Qom suggestion coordinates against Nominatim: 41 → 52 neighborhoods (dropped records with no OSM hit or name collisions, added verified boulevards/squares/landmarks); local suggestions now shown uncapped, `search.limit` caps remote Nominatim results only
+- Revamp in-map developer docs (`.qp-docs`): numbered sections with nav, 2-line quick start, mandatory worker setup, props/callbacks/theming reference, FAQ, per-block copy buttons (`.qp-code` + `.qp-code-copy`)
+
 ## 1.1.1 — 2026-09-29
 
 - Fix `maxCanvasSize` console warning on fullscreen + hiDPI: `initMap` passes `maxCanvasSize: [8192, 8192]` (within typical `MAX_TEXTURE_SIZE`), so canvas CSS size × DPR no longer exceeds MapLibre's 4096 default and full pixel ratio is kept

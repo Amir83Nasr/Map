@@ -368,6 +368,11 @@ export class LocationPicker {
         this.copyPrompt(e.currentTarget as HTMLButtonElement);
       }),
     );
+    this.root.querySelectorAll('.qp-code-copy').forEach((b) =>
+      b.addEventListener('click', (e) => {
+        this.copyCode(e.currentTarget as HTMLButtonElement);
+      }),
+    );
     const input = this.root.querySelector<HTMLInputElement>('.qp-overlay .qp-field input');
     if (input) {
       const clear = this.root.querySelector<HTMLButtonElement>('.qp-overlay .qp-clear');
@@ -637,59 +642,61 @@ export class LocationPicker {
 
   // ── DEVELOPERS DOCS ──
   private devDocsHtml(): string {
+    const copy = this.t('copy');
+    const code = (body: string): string =>
+      `<div class="qp-code" dir="ltr"><pre>${body}</pre><button class="qp-ghost qp-code-copy" type="button">${copy}</button></div>`;
     return `<div class="qp-docs" hidden><div class="qp-docs-card">
       <div class="qp-modal-head"><h2>${this.t('developers')}</h2><button class="qp-x" type="button" aria-label="${this.t('close')}">${ICONS.x}</button></div>
-      <section><h3>معرفی</h3><p>قم‌پیک (@amir83nasr/map) نقشه انتخاب موقعیت روی MapLibre برای React است؛ کاملاً متن‌باز و رایگان. فقط نسخه React دارد (کلاس vanilla در exports نیست؛ engine داخلی است). نقشه پیش‌فرض همیشه VECTOR است (نه raster)، با جستجوی آدرس، پین وسط، مارکر مکان‌ها، رابط فارسی راست‌چین (RTL) و طراحی موبایل‌فرست.</p></section>
-      <section><h3>نصب</h3><pre dir="ltr">pnpm add @amir83nasr/map maplibre-gl</pre>
-      <p class="qp-note">نکته: maplibre-gl نسخه ۶ و react/react-dom peer dependency هستند و باید جدا نصب شوند.</p>
-      <pre dir="ltr">npm i @amir83nasr/map maplibre-gl
-yarn add @amir83nasr/map maplibre-gl</pre></section>
-      <section><h3>شروع سریع (React)</h3><pre dir="ltr">import '@amir83nasr/map/styles.css';
-import { LocationPickerView } from '@amir83nasr/map';
-
-&lt;LocationPickerView
-  onConfirm={(loc) =&gt; console.log(loc)}
-/&gt;;</pre>
-      <p class="qp-note">نکته: CSS مپ‌لایبر داخل <code dir="ltr">@amir83nasr/map/styles.css</code> بسته‌بندی شده — فقط همین یک import CSS کافی است.</p>
-      <p class="qp-note">نکته: فونت فارسی IRANYekanX داخل خود پکیج است (با همین import CSS لود می‌شود) و لیبل‌های فارسی نقشه هم از PBFهای داخل پکیج می‌آیند — بدون تنظیم اضافه.</p>
-      <p class="qp-note">نکته: کامپوننت خودش init و destroy را در lifecycle (useEffect) انجام می‌دهد — بدون init/destroy دستی. تنظیمات engine فقط موقع mount اعمال می‌شوند؛ برای تنظیمات جدید با <code dir="ltr">key</code> ریمانت کنید (فقط callbackها زنده می‌مانند).</p>
-      <p class="qp-note">ورکر MapLibre را قبل از mount تنظیم کنید: در Vite فایل <code dir="ltr">maplibre-gl-worker.mjs?worker&amp;url</code> را import و به <code dir="ltr">setupQomPickWorker()</code> بدهید؛ در Next.js/webpack هر دو فایل worker و shared را کپی کنید. خطای ورکر در <code dir="ltr">onError</code>، کنسول و <code dir="ltr">.qp-err</code> نمایش داده می‌شود.</p>
+      <p class="qp-note">قم‌پیک (@amir83nasr/map) — نقشه انتخاب موقعیت روی MapLibre، فقط React، کاملاً متن‌باز و رایگان. نقشه همیشه VECTOR است (نه raster)؛ فارسی راست‌چین (RTL) و موبایل‌فرست.</p>
+      <nav class="qp-docs-nav">
+        <a href="#qp-d-install">نصب</a><a href="#qp-d-quick">شروع سریع</a><a href="#qp-d-worker">ورکر</a><a href="#qp-d-props">تنظیمات</a><a href="#qp-d-cb">کال‌بک‌ها</a><a href="#qp-d-style">ظاهر</a><a href="#qp-d-faq">خطاها</a><a href="#qp-d-prompts">پرامپت‌ها</a>
+      </nav>
+      <section id="qp-d-install"><h3>۱) نصب</h3>${code(`pnpm add @amir83nasr/map maplibre-gl`)}
+      <p class="qp-note">نکته: maplibre-gl نسخه ۶ و react/react-dom‏ peer dependency هستند و باید جدا نصب شوند.</p></section>
+      <section id="qp-d-quick"><h3>۲) شروع سریع — ۲ خط</h3>${code(`import '@amir83nasr/map/styles.css';\nimport { LocationPickerView } from '@amir83nasr/map';`)}${code(`&lt;LocationPickerView\n  style={{ height: 480 }}\n  onConfirm={(loc) =&gt; console.log(loc.lat, loc.lng, loc.address)}\n/&gt;;`)}
+      <p class="qp-note">نکته: همین یک import کافی است (CSS مپ‌لایبر + فونت IRANYekanX داخلش است). بدون <code dir="ltr">height</code> نقشه خالی دیده می‌شود (پیش‌فرض <code dir="ltr">480px</code>). کامپوننت خودش init/destroy می‌کند — دستی صدا نزنید.</p>
       <p class="qp-note">نکته Next.js App Router: کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</p></section>
-      <section><h3>تنظیمات مهم</h3><ul class="qp-list">
-      <li><code dir="ltr">map</code> — مرکز، زوم و محدوده نقشه (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>) و استایل سفارشی برداری (<code dir="ltr">style</code>). بوم پیش‌فرض <code dir="ltr">maxCanvasSize 8192</code> است تا دیالوگ تمام‌صفحه روی hiDPI بدون افت pixel ratio رندر شود.</li>
-      <li><code dir="ltr">search</code> — جستجو با پیشنهادهای پیش‌فرض ۴۱ محله قم: <code dir="ltr">enabled / placeholder / suggestions / minLength / debounceMs / limit</code>. آرایه سفارشی جایگزین پیش‌فرض می‌شود؛ <code dir="ltr">suggestions: []</code> آن را خالی می‌کند. <code dir="ltr">limit</code> پیشنهادهای محلی را هم محدود می‌کند.</li>
-      <li><code dir="ltr">markers</code> — مارکر مکان‌ها با <code dir="ltr">name / lat / lng</code>.</li>
-      <li><code dir="ltr">controls</code> — دکمه‌ها: <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>
-      <li><code dir="ltr">behavior</code> — رفتار: <code dir="ltr">snapToRoad / resolveOnMove / resolveDelayMs / settleDelayMs / snapDelayMs / pickZoom / locateZoom</code>.</li>
-      <li><code dir="ltr">i18n.labels</code> — متن‌ها؛ پیش‌فرض فارسی راست‌چین.</li>
-      <li>callbackها: <code dir="ltr">onLocationChange / onAddressResolved / onSearchResults / onPick / onConfirm / onLocate / onError</code>.</li></ul>
-      <pre dir="ltr">&lt;LocationPickerView
-  map={{ center: { lat: 34.64, lng: 50.87 }, zoom: 15 }}
-  search={{ minLength: 3, limit: 5 }}
-  controls={{ gps: true, developers: true }}
-  onConfirm={(loc) =&gt; console.log(loc)}
-/&gt;;</pre></section>
-      <section><h3>ساختار پروژه</h3><ul class="qp-list">
+      <section id="qp-d-worker"><h3>۳) ورکر MapLibre — قبل از mount (اجباری)</h3>
+      <p class="qp-note">پکیج نمی‌تواند ورکر را برای شما باندل کند. علامت خرابی: نقشه خاکستری + باکس <code dir="ltr">.qp-map-err</code> + یک <code dir="ltr">console.warn</code> + کال <code dir="ltr">onError</code>.</p>
+      <p class="qp-note">Vite:</p>${code(`import { setupQomPickWorker } from '@amir83nasr/map';\nimport workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&amp;url';\nsetupQomPickWorker(workerUrl);`)}
+      <p class="qp-note">Next.js/webpack: هر دو فایل <code dir="ltr">maplibre-gl-worker.mjs</code> و <code dir="ltr">maplibre-gl-shared.mjs</code> را در خروجی public کپی کنید و URL عمومی ورکر را به <code dir="ltr">setupQomPickWorker()</code> بدهید (ال‌یاس <code dir="ltr">setupMapWorker</code> یکسان است).</p></section>
+      <section id="qp-d-props"><h3>۴) تنظیمات مهم</h3><ul class="qp-list">
+      <li><code dir="ltr">map</code> — مرکز/زوم/محدوده (<code dir="ltr">center / zoom / minZoom / maxZoom / bounds</code>)؛ پیش‌فرض قم <code dir="ltr">34.6416,50.8764</code> زوم ۱۴. استایل سفارشی فقط برداری (<code dir="ltr">style</code>)؛ <code dir="ltr">glyphs</code> برای self-host فونت نقشه.</li>
+      <li><code dir="ltr">search</code> — پیش‌فرض ۵۲ محله قم (همه نمایش، بدون سقف): <code dir="ltr">enabled / placeholder / suggestions / minLength(3) / debounceMs(350) / limit(5)</code>. آرایه سفارشی جایگزین می‌شود؛ <code dir="ltr">[]</code> غیرفعال می‌کند. <code dir="ltr">limit</code> فقط نتایج ریموت (Nominatim) است.</li>
+      <li><code dir="ltr">markers</code> — پین‌ها با <code dir="ltr">name / lat / lng</code>؛ کلیک → پرواز تا <code dir="ltr">pickZoom</code> + کال <code dir="ltr">onPick</code>.</li>
+      <li><code dir="ltr">controls</code> — <code dir="ltr">gps / confirmButton / searchTrigger / developers</code>.</li>
+      <li><code dir="ltr">behavior</code> — <code dir="ltr">snapToRoad / resolveOnMove / resolveDelayMs(400) / settleDelayMs(250) / snapDelayMs(900) / pickZoom(15) / locateZoom(18)</code>. اسنپ فقط حرکت دستی، زوم ≥ ۱۵؛ پینچ‌زوم و حرکات کد هرگز اسنپ نمی‌شوند.</li>
+      <li><code dir="ltr">i18n.labels</code> — بازنویسی متن‌ها؛ چیدمان همیشه RTL است.</li></ul>
+      ${code(`&lt;LocationPickerView\n  map={{ center: { lat: 34.64, lng: 50.87 }, zoom: 15 }}\n  search={{ minLength: 3, limit: 5 }}\n  markers={[{ name: 'فروشگاه', lat: 34.63, lng: 50.87 }]}\n  controls={{ gps: true, developers: true }}\n  onConfirm={(loc) =&gt; console.log(loc)}\n/&gt;;`)}
+      <p class="qp-note">تنظیمات engine فقط موقع mount اعمال می‌شوند؛ برای اعمال جدید با <code dir="ltr">key</code> ریمانت کنید — فقط کال‌بک‌ها زنده می‌مانند: <code dir="ltr">&lt;LocationPickerView key={cityId} ... /&gt;</code>.</p></section>
+      <section id="qp-d-cb"><h3>۵) کال‌بک‌ها — کدام برای چه</h3><ul class="qp-list">
+      <li><code dir="ltr">onConfirm</code> — دکمه تایید در مودال → <b>ذخیره نتیجه</b> (فرم/سرور).</li>
+      <li><code dir="ltr">onPick</code> — کلیک پین/پیشنهاد → واکنش، نه ذخیره.</li>
+      <li><code dir="ltr">onLocationChange</code> — هر حرکت مرکز (پرتکرار).</li>
+      <li><code dir="ltr">onAddressResolved</code> — پایان ژئوکد معکوس.</li>
+      <li><code dir="ltr">onSearchResults</code> — پایان جستجوی ریموت.</li>
+      <li><code dir="ltr">onLocate</code> — موفقیت GPS. <code dir="ltr">onError</code> — هر خطا از جمله ورکر.</li></ul></section>
+      <section id="qp-d-style"><h3>۶) سفارشی‌سازی ظاهر</h3><p class="qp-note">prop تم نیست؛ همه کلاس‌ها/متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با پروژه تداخل نمی‌کنند:</p>
+      ${code(`.qp { --qp-brand: #16a34a; --qp-ink: #111; --qp-radius: 16px; }`)}
+      <p class="qp-note">متغیرها: <code dir="ltr">--qp-brand --qp-brand-dark --qp-bg --qp-card --qp-ink --qp-muted --qp-line --qp-radius --qp-shadow --qp-font</code>.</p></section>
+      <section><h3>۷) ساختار پروژه</h3><ul class="qp-list">
       <li><code dir="ltr">package/src/index.tsx</code> — API عمومی (re-export از <code dir="ltr">react/ + core/</code>).</li>
       <li><code dir="ltr">package/src/react/</code> — کامپوننت <code dir="ltr">LocationPickerView</code> + هلپر <code dir="ltr">setupQomPickWorker</code>.</li>
       <li><code dir="ltr">package/src/engine/</code> — engine داخلی (<code dir="ltr">picker</code>، در exports عمومی نیست).</li>
       <li><code dir="ltr">package/src/core/ + style/</code> — تایپ‌ها و helperها + استایل و basemap.</li>
-      <li><code dir="ltr">package/src/style/styles.css</code> — استایل‌ها؛ خروجی build <code dir="ltr">dist/styles.css</code> است (ایمپورت: <code dir="ltr">@amir83nasr/map/styles.css</code>).</li>
-      <li><code dir="ltr">package/fonts/</code> — فونت IRANYekanX (woff2) و PBFهای glyph نقشه؛ داخل tarball منتشر می‌شود.</li>
-      <li><code dir="ltr">demo/</code> — دموی Vite؛ <code dir="ltr">docs/</code> — ARCHITECTURE و CHANGELOG.</li></ul></section>
-      <section><h3>سفارشی‌سازی ظاهر</h3><p>همه کلاس‌ها و متغیرها با <code dir="ltr">qp-</code> شروع می‌شوند و با استایل پروژه تداخل نمی‌کنند. prop جداگانه theme نیست؛ رنگ و فونت را با متغیرهای CSS عوض کنید:</p>
-      <pre dir="ltr">.qp { --qp-brand: #16a34a; --qp-radius: 16px; }</pre></section>
-      <section><h3>پرامپت شروع از صفر</h3><div class="qp-prompt">${DEV_PROMPT_ZERO}</div>
+      <li><code dir="ltr">dist/styles.css</code> — ایمپورت: <code dir="ltr">@amir83nasr/map/styles.css</code>.</li>
+      <li><code dir="ltr">package/fonts/</code> — فونت IRANYekanX‏ (woff2) و PBFهای glyph نقشه؛ داخل tarball منتشر می‌شود.</li></ul></section>
+      <section id="qp-d-faq"><h3>۸) سوالات پرتکرار</h3><ul class="qp-list">
+      <li>نقشه خالی/خاکستری بدون خطا؟ ارتفاع بدهید (<code dir="ltr">style={{ height: 480 }}</code>).</li>
+      <li>باکس قرمز ورکر؟ بخش ۳ (ورکر) — نه چیز دیگر.</li>
+      <li>لیبل فارسی نقشه نیست؟ CDN glyph مسدود است؛ <code dir="ltr">map.glyphs</code> را به کپی محلی <code dir="ltr">fonts/</code> بدهید.</li>
+      <li>پراپ جدید اثر ندارد؟ mount-only است؛ <code dir="ltr">key</code> بدهید.</li>
+      <li>کرش Next.js‏ (<code dir="ltr">window/document</code>)؟ <code dir="ltr">'use client' + ssr: false</code>.</li>
+      <li>کدام نسخه maplibre؟ ۶ (peer). رایگان؟ بله، متن‌باز.</li></ul></section>
+      <section id="qp-d-prompts"><h3>پرامپت شروع از صفر</h3><div class="qp-prompt">${DEV_PROMPT_ZERO}</div>
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="zero">${this.t('copy')}</button></div></section>
       <section><h3>پرامپت افزودن به پروژه موجود</h3><div class="qp-prompt">${DEV_PROMPT_EXISTING}</div>
       <div class="qp-modal-row"><button class="qp-ghost qp-copy" type="button" data-prompt="existing">${this.t('copy')}</button></div></section>
-      <section><h3>سوالات پرتکرار</h3><ul class="qp-list">
-      <li>نقشه خالی است؟ به کامپوننت ارتفاع بدهید (مثلاً <code dir="ltr">style={{ height: 480 }}</code>)؛ بدون ارتفاع نقشه دیده نمی‌شود.</li>
-      <li>لیبل‌های فارسی نقشه نمایش داده نمی‌شود؟ glyphهای پیش‌فرض از CDN پکیج می‌آیند؛ برای self-host کردن، <code dir="ltr">map.glyphs</code> را به مسیر فونت‌های پکیج (مثلاً <code dir="ltr">/fonts/{fontstack}/{range}.pbf</code> بعد از کپی <code dir="ltr">node_modules/@amir83nasr/map/fonts</code>) تنظیم کنید.</li>
-      <li>پیام خطای ورکر روی نقشه می‌بینید؟ در Vite، <code dir="ltr">maplibre-gl-worker.mjs?worker&amp;url</code> را import و قبل از mount به <code dir="ltr">setupQomPickWorker()</code> بدهید؛ در Next.js/webpack هر دو فایل <code dir="ltr">maplibre-gl-worker.mjs</code> و <code dir="ltr">maplibre-gl-shared.mjs</code> را کپی کنید. پکیج همین خطا را یک‌بار به <code dir="ltr">onError</code> و کنسول هم می‌فرستد.</li>
-      <li>کدام نسخه maplibre؟ نسخه ۶؛ چون peer dependency است باید جدا نصب شود.</li>
-      <li>در Next.js App Router؟ کامپوننت client است؛ با <code dir="ltr">dynamic(..., { ssr: false })</code> لود کنید.</li>
-      <li>رایگان است؟ بله، قم‌پیک کاملاً متن‌باز و رایگان است.</li></ul></section>
       <div class="qp-modal-row"><button class="qp-cta qp-back" type="button">${this.t('backToMap')}</button></div>
     </div></div>`;
   }
@@ -702,22 +709,32 @@ import { LocationPickerView } from '@amir83nasr/map';
     if (d) d.hidden = true;
   }
 
-  private copyPrompt(btn: HTMLButtonElement): void {
-    const done = (): void => {
-      const prev = btn.textContent ?? '';
-      btn.textContent = this.t('copied');
-      window.setTimeout(() => {
-        btn.textContent = prev;
-      }, 1500);
-    };
+  private copyDone(btn: HTMLButtonElement): void {
+    const prev = btn.textContent ?? '';
+    btn.textContent = this.t('copied');
+    window.setTimeout(() => {
+      btn.textContent = prev;
+    }, 1500);
+  }
+
+  private copyText(text: string, btn: HTMLButtonElement): void {
+    const done = (): void => this.copyDone(btn);
     if (navigator.clipboard?.writeText) {
-      const key = btn.dataset.prompt ?? 'zero';
-      const text = DEV_PROMPTS[key] ?? DEV_PROMPT_ZERO;
       navigator.clipboard.writeText(text).then(done, () => this.fallbackCopy(text, done));
       return;
     }
+    this.fallbackCopy(text, done);
+  }
+
+  private copyPrompt(btn: HTMLButtonElement): void {
     const key = btn.dataset.prompt ?? 'zero';
-    this.fallbackCopy(DEV_PROMPTS[key] ?? DEV_PROMPT_ZERO, done);
+    this.copyText(DEV_PROMPTS[key] ?? DEV_PROMPT_ZERO, btn);
+  }
+
+  private copyCode(btn: HTMLButtonElement): void {
+    const pre = btn.closest('.qp-code')?.querySelector('pre');
+    if (!pre) return;
+    this.copyText(pre.textContent ?? '', btn);
   }
 
   private fallbackCopy(text: string, done: () => void): void {
@@ -791,13 +808,11 @@ import { LocationPickerView } from '@amir83nasr/map';
 
   private filteredSuggestions(q: string): SearchSuggestion[] {
     const needle = enDigits(q).trim();
-    const limit = this.opts.search.limit ?? 5;
     return this.suggestions()
       .filter(
         (x) => !needle || enDigits(x.name).includes(needle) || enDigits(x.addr).includes(needle),
       )
-      .sort((a, b) => a.name.localeCompare(b.name, 'fa'))
-      .slice(0, Math.max(1, limit));
+      .sort((a, b) => a.name.localeCompare(b.name, 'fa'));
   }
 
   private suggestions(): SearchSuggestion[] {

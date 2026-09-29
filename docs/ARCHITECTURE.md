@@ -33,7 +33,7 @@ Public package surface (exports map): `.` → `LocationPickerView` + `setupQomPi
 Internal class; React adapter owns lifecycle. Owns all DOM under `.qp[dir=rtl]`:
 
 - `.qp-map-wrap` (`.qp-map` + center `.qp-pin`, GPS button, dev button) + `.qp-sheet` (search trigger, desktop `.qp-desk`, CTA) + `.qp-overlay` (mobile search) + `.qp-geo` / `.qp-confirm` modals + `.qp-docs` + `.qp-toast`
-- `mergeOptions()` in `defaults.ts` supplies defaults: center Qom `34.6416,50.8764` z14, `minZoom 11 / maxZoom 19`, Qom bounds, `search { suggestions: 41 Qom neighborhoods (defined in `core/defaults.ts`, demo relies on them), minLength 3, debounceMs 350, limit 5 }`, `behavior { resolveDelayMs 400, settleDelayMs 250, snapDelayMs 900, pickZoom 15, locateZoom 18 }`; custom `search.suggestions` replaces the default, `[]` disables it
+- `mergeOptions()` in `defaults.ts` supplies defaults: center Qom `34.6416,50.8764` z14, `minZoom 11 / maxZoom 19`, Qom bounds, `search` (suggestions: 52 Qom neighborhoods defined in `core/defaults.ts` and shown uncapped, demo relies on them; `minLength 3`, `debounceMs 350`, `limit 5` for remote Nominatim results), `behavior { resolveDelayMs 400, settleDelayMs 250, snapDelayMs 900, pickZoom 15, locateZoom 18 }`; custom `search.suggestions` replaces the default, `[]` disables it
 
 Map loop (`initMap`):
 
@@ -45,7 +45,7 @@ Worker startup failure cannot be seen from map events: MapLibre `Actor` listens 
 
 Addressing: `setLocation` validates (`isValidLatLng`), emits `locationChange`, debounces `reverseGeocode` (Nominatim `accept-language=fa`, 4-decimal cache, cap 200). Abort per new request, `revSeq` guards stale replies.
 
-Search: local `suggestions` filtered on `enDigits` name/addr, sorted `fa` locale; remote `searchLocation` (Nominatim `viewbox 50.35,35.05,51.45,34.15 + bounded=1`, cache cap 50) with debounce + abort + `searchSeq` guard. Overlay (mobile) and `.qp-desk` (desktop) share `onQueryShared` + single `runRemoteSearch` on separate nodes; local suggestions capped by `search.limit`.
+Search: local `suggestions` filtered on `enDigits` name/addr, sorted `fa` locale, shown uncapped; remote `searchLocation` (Nominatim `viewbox 50.35,35.05,51.45,34.15 + bounded=1`, `limit` = remote count, cache cap 50) with debounce + abort + `searchSeq` guard. Overlay (mobile) and `.qp-desk` (desktop) share `onQueryShared` + single `runRemoteSearch` on separate nodes.
 
 Venues (`markers`): star-button `Marker` + auto-closing `Popup` (4s); click flies to `pickZoom` and emits `pick`.
 
@@ -53,7 +53,7 @@ GPS (`locate`): insecure context opens `.qp-geo` guide directly; success tempora
 
 Confirm: `.qp-confirm` modal prefilled with resolved address, `lat,lng` to 6 decimals; `finishConfirm` emits `confirm` exactly once (deduped; no double `onConfirm`), toasts `registered + faCoord` (label `submitting` during the fake delay).
 
-In-map docs (`controls.developers` → `.qp-docs`): Persian intro/install/quick-start (including the worker one-liner)/settings/appearance/structure/FAQ + two copyable LLM prompts (`DEV_PROMPT_ZERO`, `DEV_PROMPT_EXISTING`), clipboard with `execCommand` fallback.
+In-map docs (`controls.developers` → `.qp-docs`): numbered Persian sections with nav (quick-start, worker, props, callbacks, theming, mount-only `key`, FAQ) + per-block copy (`.qp-code`/`.qp-code-copy`) + two copyable LLM prompts (`DEV_PROMPT_ZERO`, `DEV_PROMPT_EXISTING`), clipboard with `execCommand` fallback (`copyText`/`copyDone` shared by both).
 
 Teardown: `destroy()` aborts fetches, clears all timers (resolve/search/toast/settle/confirm/venue), removes markers + map + root. Timers are per-concern fields (no shared `privateTimers`); venue buttons built via DOM API (no raw-HTML injection). Escape closes overlay/docs/modals topmost-first.
 
